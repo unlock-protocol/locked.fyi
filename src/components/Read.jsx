@@ -1,35 +1,15 @@
 import React from 'react';
-import { useLockMetadata } from '../hooks/useLockMetadata'
-import { useIpfsNote } from '../hooks/useIpfsNote'
-import { Markdown } from 'react-showdown'
-
-/**
- * Note component
- * @param {*} param0
- */
-export const Note = ({cid}) => {
-  const {note, loading, error} = useIpfsNote(cid)
-  if(error) {
-    return <p>{error}</p>
-  }
-
-  if(loading) {
-    return <p>Loading...</p>
-  }
-  return <article>
-    <h1>{note.attributes.title}</h1>
-    <span>By {note.attributes.author}</span>
-    <Markdown markup={ note.body } />
-  </article>
-}
+import { useThread } from '../hooks/useThread'
+import FrontMatter from 'front-matter'
+import {Link} from "react-router-dom";
 
 /**
  * Will show all of the notes
- * TODOL add pagination
+ * TODO add pagination
  * @param {*} param0
  */
-export const Read = ({lock: lockAddress}) => {
-  const {lock, error, loading} = useLockMetadata(lockAddress)
+export const Read = ({thread: threadAddress}) => {
+  const {thread, error, loading} = useThread(threadAddress)
   if(error) {
     return <p>{error}</p>
   }
@@ -38,12 +18,14 @@ export const Read = ({lock: lockAddress}) => {
   }
 
   return <section>
-    <p>Read notes for {lockAddress}</p>
-    {!lock.notes && <p>No notes have been published for this lock yet!</p>}
+    <p>Read notes for {threadAddress}</p>
+    {!thread.length && <p>No notes have been published for this lock yet!</p>}
     <ul>
-      {lock.notes.map((cid) => {
-        return (<li key={cid}>
-          <Note cid={cid} />
+      {thread.map((entry, index) => {
+        const note = FrontMatter(entry.message)
+        const notePath = `/?thread=${threadAddress}&note=${index}`
+        return (<li key={entry.postId}>
+          <Link to={notePath}>{note.attributes.title}</Link>
         </li>)
       })}
     </ul>
