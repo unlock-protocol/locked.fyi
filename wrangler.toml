@@ -1,11 +1,10 @@
 name = "locked_fyi"
 type = "webpack"
 account_id = "30fa248ff7b03cfcac765dae9509bba0"
-workers_dev = true
-route = ""
+workers_dev = false
+route = "locked.fyi/*"
 zone_id = "26ddeab48fea525b2fc6d4e009607d1a"
 
 [site]
 bucket = "./build"
 entry-point = "workers-site"
-route = "locked.fyi/*"
