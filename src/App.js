@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Write from './components/Write'
 import Read from './components/Read'
+import Note from './components/Note'
 import Home from './components/Home'
 
 
@@ -16,15 +17,17 @@ function useQuery() {
 
 const Routes = () => {
   let query = useQuery();
-  const lock = query.get("lock");
+  const thread = query.get("thread");
+  const note = query.get("note");
 
   return (<Switch>
     <Route path="/write">
-      <Write lock={lock} />
+      <Write />
     </Route>
     <Route path="/">
-      {lock && <Read lock={lock} />}
-      {!lock && <Home />}
+      {thread && note && <Note note={note} thread={thread} />}
+      {thread && !note && <Read thread={thread} />}
+      {!thread && <Home />}
     </Route>
   </Switch>)
 }
