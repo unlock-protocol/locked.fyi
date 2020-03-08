@@ -9,7 +9,7 @@ import Write from './components/Write'
 import Read from './components/Read'
 import Note from './components/Note'
 import Home from './components/Home'
-
+import Layout from './components/Layout'
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -20,16 +20,19 @@ const Routes = () => {
   const thread = query.get("thread");
   const note = query.get("note");
 
-  return (<Switch>
-    <Route path="/write">
-      <Write />
-    </Route>
-    <Route path="/">
-      {thread && note && <Note note={note} thread={thread} />}
-      {thread && !note && <Read thread={thread} />}
-      {!thread && <Home />}
-    </Route>
-  </Switch>)
+  return (
+  <Layout>
+    <Switch>
+      <Route path="/write">
+        <Write />
+      </Route>
+      <Route path="/">
+        {thread && note && <Note note={note} thread={thread} />}
+        {thread && !note && <Read thread={thread} />}
+        {!thread && <Home />}
+      </Route>
+    </Switch>
+  </Layout>)
 }
 
 
