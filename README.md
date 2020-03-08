@@ -1,39 +1,68 @@
-# locked.fyi
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-A basic notes application where notes are stored on IPFS and only visible by members of a lock.
+## Available Scripts
 
-# Definitions
+In the project directory, you can run:
 
-* _Author_: person who creates content.
-* _Visitor_: web users through a web-browser
-* _Lock_: on-chain contract which keeps track of members as well as sets the terms of the membership (currency, price, duration, number of members... etc). It can be deployed from https://app.unlock-protocol.com/dashboard/
-* _Member_: visitor who has purchased a membership
-* _Note_: content created by the author
+### `yarn start`
 
-# User stories
+Runs the app in the development mode.<br />
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-## Author
-* As an author I want to write notes (short or long) with the narkdown format which can be saved on a "permissionless" datastaore IPFS.
-* As an author, I want to lock these notes so that only paying members to my lock can access/view them.
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
 
-## Visitor
-* As a visitor, I am able to load a page for an author, but the content is not available unless I become a member
-* As a visitor, I can become a member by purchasing the key to a lock, from the page on which the notes would be visible if I was a member
+### `yarn test`
 
-## Member
-* As a member, I am able to load the page for an author and view all of the notes that the author has published
+Launches the test runner in the interactive watch mode.<br />
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
+### `yarn build`
 
-# Flow
+Builds the app for production to the `build` folder.<br />
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-## Writing notes
-1. The author creates a lock on `https://app.unlock-protocol.com/dashboard/`
-2. The author goes to `https://locked.fyi/<lockAddress>/write`
-3. The athor writes a note using markdown. When saved, the note is sent to IPFS
-4. The note's hash is saved as metadata on the lock (by requiring the author to sign a message, proving that they own the lock!)
-  
-## Reading notes
-1. A visitor visits `https://locked.fyi/<lockAddress>`
-2. The application running on that page checks whether the current visitor is a member to the lock using [unlock's paywall application](https://docs.unlock-protocol.com/#install-a-lock-on-a-web-page)
-3. If the visitor is not a member (see [handling events](https://docs.unlock-protocol.com/#handle-events)), show a button which asks the user to become a member. When clicked, the [button initiates the checkout](https://docs.unlock-protocol.com/#initiate-checkout). 
-4. If the visitor is a member, load the IPFS hashes from the lock metadata and load each note and render them on the page.
+The build is minified and the filenames include the hashes.<br />
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `yarn eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+
+You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+
+### Analyzing the Bundle Size
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+
+### Making a Progressive Web App
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+
+### Advanced Configuration
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+
+### Deployment
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+
+### `yarn build` fails to minify
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
