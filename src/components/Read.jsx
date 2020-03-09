@@ -2,6 +2,7 @@ import React from 'react';
 import { useThread } from '../hooks/useThread'
 import FrontMatter from 'front-matter'
 import {Link} from "react-router-dom";
+import {Loading} from './Loading'
 
 /**
  * Will show all of the notes
@@ -14,7 +15,7 @@ export const Read = ({thread: threadAddress}) => {
     return <p>{error}</p>
   }
   if(loading) {
-    return <p>Loading...</p>
+    return <Loading />
   }
 
   return <section>

@@ -4,7 +4,7 @@ import { Markdown } from 'react-showdown'
 import FrontMatter from 'front-matter'
 import {Link} from "react-router-dom";
 import {useLocks} from '../hooks/useLocks'
-
+import {Loading} from './Loading'
 
 /**
  * Shows the child
@@ -13,7 +13,7 @@ import {useLocks} from '../hooks/useLocks'
 export const Locked = ({locks, children}) => {
   const {locked, loading, unlock} = useLocks(locks)
   if(loading) {
-    return <p>loading...</p>
+    return <Loading />
   }
   if (locked) {
     return <p><button onClick={unlock}>Unlock</button></p>
@@ -32,7 +32,7 @@ export const Note = ({thread: threadAddress, note: index}) => {
     return <p>{error}</p>
   }
   if(loading) {
-    return <p>Loading...</p>
+    return <Loading />
   }
 
   const item = thread[index]
