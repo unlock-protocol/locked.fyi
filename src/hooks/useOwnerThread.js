@@ -6,10 +6,16 @@ import Box from '3box'
  * @param {*} note
  */
 const buildContent = (note) => {
+  const locks = note.attributes.locks.map(lock => {
+    return `  - ${lock}
+`
+  }).join('')
   return `---
 title: ${note.attributes.title}
 author: ${note.attributes.author}
 preview: ${note.attributes.preview}
+locks:
+${locks}
 ---
 ${note.body}`
 

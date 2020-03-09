@@ -3,7 +3,7 @@ import {Link} from "react-router-dom";
 
 
 export const Layout = ({children}) => {
-  return <page>
+  return <div>
   <h1>Locked.fyi</h1>
   <header>
     <Link to='/write'>Write</Link>
@@ -11,6 +11,6 @@ export const Layout = ({children}) => {
 
   {children}
 
-  </page>
+  </div>
 }
 export default Layout

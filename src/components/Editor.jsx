@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import ReactMde from "react-mde";
 import * as Showdown from "showdown";
 import "react-mde/lib/styles/css/react-mde-all.css";
@@ -12,17 +12,19 @@ const converter = new Showdown.Converter({
 });
 
 const Editor = ({lock, thread, save, saved, error, saving}) => {
-  const [body, setBody] = React.useState("# Hello world!");
-  const [title, setTitle] = React.useState("Untitled");
-  const [author, setAuthor] = React.useState("Unnamed");
-  const [selectedTab, setSelectedTab] = React.useState("write");
+  const [body, setBody] = useState("# Hello world!");
+  const [title, setTitle] = useState("Untitled");
+  const [locks, setLocks] = useState("");
+  const [author, setAuthor] = useState("Unnamed");
+  const [selectedTab, setSelectedTab] = useState("write");
 
   const onSave = (event) => {
     event.preventDefault()
     save({
       attributes: {
         title,
-        author
+        author,
+        locks: locks.split(/[\W]+/).filter(x => !!x).map(x => `"${x}"`)
       },
       body
     })
@@ -42,6 +44,11 @@ const Editor = ({lock, thread, save, saved, error, saving}) => {
       <input type="text" id="author" name="author" value={author} onChange={(event) => {
         setAuthor(event.target.value)
       }} />
+      <label htmlFor="locks">Locks (coma-separated)</label>
+      <input type="text" id="locks" name="locks" value={locks} onChange={(event) => {
+        setLocks(event.target.value)
+      }} />
+
       {/* Source: https://github.com/andrerpena/react-mde */}
       <ReactMde
         value={body}
