@@ -4,6 +4,7 @@ import { Markdown } from 'react-showdown'
 import FrontMatter from 'front-matter'
 import {Link} from "react-router-dom";
 import {useLocks} from '../hooks/useLocks'
+import {useProfile} from '../hooks/useProfile'
 import {Loading} from './Loading'
 
 /**
@@ -19,6 +20,17 @@ export const Locked = ({locks, children}) => {
     return <p><button onClick={unlock}>Unlock</button></p>
   }
   return children
+}
+
+export const Author = ({did}) => {
+  const {loading, profile} = useProfile(did)
+  if(loading) {
+    return <span>&nbsp;</span>
+  }
+  if (profile.website) {
+    return <span>By <a target="_blank" href={profile.website}>{profile.name}</a></span>
+  }
+  return <span>By {profile.name}</span>
 }
 
 /**
@@ -39,6 +51,7 @@ export const Note = ({thread: threadAddress, note: index}) => {
   const note = FrontMatter(item.message)
   const threadPath = `/?thread=${threadAddress}`
   return <article>
+    <Author did={item.author} />
     <Locked locks={note.attributes.locks}>
       <Markdown markup={note.body}></Markdown>
     </Locked>
