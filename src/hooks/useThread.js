@@ -13,7 +13,7 @@ export const useThread = (threadAddress) => {
   useEffect(() => {
     const openSpace = async () => {
       const thread = await Box.getThreadByAddress(threadAddress)
-      setThread(thread)
+      setThread(thread.reverse())
       setLoading(false)
     }
 
