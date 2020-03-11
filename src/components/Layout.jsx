@@ -2,10 +2,13 @@ import React from 'react';
 import {Link} from "react-router-dom";
 import {useIdentity} from '../hooks/useIdentity'
 
+export const IdentityContext = React.createContext(null);
+
 
 export const Layout = ({children}) => {
   const {authenticate, identity} = useIdentity()
-  return <div>
+
+  return <IdentityContext.Provider value={identity}>
   <h1>Locked.fyi</h1>
   <header>
     {!identity &&
@@ -23,6 +26,6 @@ export const Layout = ({children}) => {
 
   {children}
 
-  </div>
+  </IdentityContext.Provider>
 }
 export default Layout

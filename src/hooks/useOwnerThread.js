@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect} from 'react'
 import Box from '3box'
+
 
 /**
  * util function to build the markdown file
@@ -25,7 +26,7 @@ ${note.body}`
 /**
  * Opens a thread for a user!
  */
-export const useOwnerThread = () => {
+export const useOwnerThread = (identity) => {
   const [loading, setLoading] = useState(true)
   // we use Personal Open threads
   const [thread, setThread] = useState(null)
@@ -35,8 +36,11 @@ export const useOwnerThread = () => {
 
   useEffect(() => {
     const openSpace = async () => {
-      const userAddresses = await window.ethereum.enable()
-      const box = await Box.openBox(userAddresses[0], window.ethereum)
+      if(!identity) {
+        setLoading(false)
+        return
+      }
+      const box = await Box.openBox(identity, window.ethereum)
       const space = await box.openSpace('locked')
       const thread = await space.joinThread('fyi', {
         members: true
@@ -46,7 +50,7 @@ export const useOwnerThread = () => {
     }
 
     openSpace()
-  }, [])
+  }, [identity])
 
 
   const save = async (note) => {

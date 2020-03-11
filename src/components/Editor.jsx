@@ -3,6 +3,9 @@ import ReactMde from "react-mde";
 import * as Showdown from "showdown";
 import "react-mde/lib/styles/css/react-mde-all.css";
 import {Link} from "react-router-dom";
+import {Loading} from './Loading'
+
+import {useOwnerThread} from '../hooks/useOwnerThread'
 
 const converter = new Showdown.Converter({
   tables: true,
@@ -11,12 +14,19 @@ const converter = new Showdown.Converter({
   tasklists: true
 });
 
-const Editor = ({lock, thread, save, saved, error, saving}) => {
+
+const Editor = ({identity}) => {
+  const {thread, loading, save, saved, error, saving} = useOwnerThread(identity)
+
   const [body, setBody] = useState("# Hello world!");
   const [title, setTitle] = useState("Untitled");
   const [locks, setLocks] = useState("");
   const [author, setAuthor] = useState("Unnamed");
   const [selectedTab, setSelectedTab] = useState("write");
+
+  if (loading || !thread) {
+    return <Loading />
+  }
 
   const onSave = (event) => {
     event.preventDefault()

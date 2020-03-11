@@ -1,13 +1,13 @@
-import React from 'react';
-import {useOwnerThread} from '../hooks/useOwnerThread'
+import React,  {useContext} from 'react';
 import Editor from './Editor'
-import {Loading} from './Loading'
 
-const Write = ({lock}) => {
-  const {thread, loading, save, saved, error, saving} = useOwnerThread()
-  if (loading) {
-    return <Loading />
+import {IdentityContext} from '../components/Layout'
+
+const Write = () => {
+  const identity = useContext(IdentityContext)
+  if(!identity) {
+    return <>Please authenticate first</>
   }
-  return <Editor thread={thread} lock={lock} save={save} saved={saved} error={error} saving={saving} />
+  return <Editor identity={identity} />
 }
 export default Write
