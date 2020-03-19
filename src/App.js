@@ -24,7 +24,7 @@ const Routes = () => {
   <Layout>
     <Switch>
       <Route path="/write">
-        <Write />
+        <Write note={note} />
       </Route>
       <Route path="/">
         {thread && note && <Note note={note} thread={thread} />}

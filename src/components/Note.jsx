@@ -1,11 +1,12 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import { useNote } from '../hooks/useNote'
 import { useThread } from '../hooks/useThread'
 import { Markdown } from 'react-showdown'
-import FrontMatter from 'front-matter'
 import {Link} from "react-router-dom";
 import {useLocks} from '../hooks/useLocks'
 import {useProfile} from '../hooks/useProfile'
 import {Loading} from './Loading'
+import {IdentityContext} from '../components/Layout'
 
 /**
  * Shows the child
@@ -22,15 +23,19 @@ export const Locked = ({locks, children}) => {
   return children
 }
 
-export const Author = ({did}) => {
-  const {loading, profile} = useProfile(did)
+export const Author = ({address}) => {
+  const {loading, profile} = useProfile(address)
   if(loading) {
     return <span>&nbsp;</span>
   }
   if (profile.website) {
-    return <span>By <a target="_blank" href={profile.website}>{profile.name}</a></span>
+    return <span>By <a target="_blank" rel="noopener noreferrer" href={profile.website}>{profile.name}</a></span>
   }
-  return <span>By {profile.name}</span>
+  if (profile.name) {
+    return <span>By {profile.name}</span>
+  }
+  return <span>By {address}</span>
+
 }
 
 /**
@@ -38,8 +43,10 @@ export const Author = ({did}) => {
  * @param {*} param0
  */
 export const Note = ({thread: threadAddress, note: index}) => {
-  const {thread, error, loading} = useThread(threadAddress)
+  const {thread} = useThread(threadAddress)
+  const identity = useContext(IdentityContext)
 
+  const {note, error, loading} = useNote(thread, index)
   if(error) {
     return <p>{error}</p>
   }
@@ -47,16 +54,18 @@ export const Note = ({thread: threadAddress, note: index}) => {
     return <Loading />
   }
 
-  const item = thread[index]
-  const note = FrontMatter(item.message)
   const threadPath = `/?thread=${threadAddress}`
+  const editPath = `/write?note=${index}`
+  const viewedByAuthor = identity === note.attributes.author
+
   return <article>
-    <Author did={item.author} />
+    <Author address={note.attributes.author} />
     <Locked locks={note.attributes.locks}>
       <Markdown markup={note.body}></Markdown>
     </Locked>
   <footer>
-    Back to <Link to={threadPath}>Thread</Link>
+    <nav>Back to <Link to={threadPath}>Thread</Link></nav>
+    {viewedByAuthor && <nav><Link to={editPath}>Edit</Link></nav>}
   </footer>
   </article>
 }

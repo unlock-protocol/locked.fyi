@@ -15,13 +15,9 @@ const converter = new Showdown.Converter({
 });
 
 
-const Editor = ({identity}) => {
-  const {thread, loading, save, saved, error, saving} = useOwnerThread(identity)
+const Editor = ({identity, note: index}) => {
+  const {thread, note, setNoteAttribute, setNoteBody, loading, save, saving} = useOwnerThread(identity, index)
 
-  const [body, setBody] = useState("# Hello world!");
-  const [title, setTitle] = useState("Untitled");
-  const [locks, setLocks] = useState("");
-  const [author, setAuthor] = useState("Unnamed");
   const [selectedTab, setSelectedTab] = useState("write");
 
   if (loading || !thread) {
@@ -30,14 +26,7 @@ const Editor = ({identity}) => {
 
   const onSave = (event) => {
     event.preventDefault()
-    save({
-      attributes: {
-        title,
-        author,
-        locks: locks.split(/[\W]+/).filter(x => !!x).map(x => `"${x}"`)
-      },
-      body
-    })
+    save()
     return false
   }
 
@@ -45,34 +34,29 @@ const Editor = ({identity}) => {
 
   return (
     <form className="container" onSubmit={onSave}>
-      <p>Write new note for <Link to={threadPath}>{threadPath}</Link></p>
+      <p>Feed <Link to={threadPath}>{threadPath}</Link></p>
       <label htmlFor="title">Title </label>
-      <input type="text" id="title" name="title" value={title} onChange={(event) => {
-        setTitle(event.target.value)
-      }} />
-      <label htmlFor="author">Author </label>
-      <input type="text" id="author" name="author" value={author} onChange={(event) => {
-        setAuthor(event.target.value)
+      <input type="text" id="title" name="title" value={note.attributes?.title} onChange={(event) => {
+        setNoteAttribute('title', event.target.value)
       }} />
       <label htmlFor="locks">Locks (coma-separated)</label>
-      <input type="text" id="locks" name="locks" value={locks} onChange={(event) => {
-        setLocks(event.target.value)
+      <input type="text" id="locks" name="locks" value={note.attributes?.locks} onChange={(event) => {
+        setNoteAttribute('locks', event.target.value.split(/[\W]+/).filter(x => !!x).map(x => `"${x}"`))
       }} />
 
       {/* Source: https://github.com/andrerpena/react-mde */}
       <ReactMde
-        value={body}
-        onChange={setBody}
+        value={note.body}
+        onChange={setNoteBody}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
         generateMarkdownPreview={markdown =>
           Promise.resolve(converter.makeHtml(markdown))
         }
       />
-      {!saving && !saved &&
+      {!saving &&
       <button type="submit">Save</button>}
       {saving && <span>Saving</span>}
-      {saved && <span>{saved}</span>}
     </form>
   );
 }

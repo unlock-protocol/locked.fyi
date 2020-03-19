@@ -1,6 +1,6 @@
-import { useState, useEffect} from 'react'
+import { useState, useEffect, useReducer} from 'react'
 import Box from '3box'
-
+import FrontMatter from 'front-matter'
 
 /**
  * util function to build the markdown file
@@ -13,8 +13,7 @@ const buildContent = (note) => {
   }).join('')
   return `---
 title: ${note.attributes.title}
-author: ${note.attributes.author}
-preview: ${note.attributes.preview}
+author: "${note.attributes.author}"
 locks:
 ${locks}
 ---
@@ -22,17 +21,47 @@ ${note.body}`
 
 }
 
+const noteReducer = (state, action) => {
+  switch (action.type) {
+    case 'setNote':
+      return {
+        ...action.note
+      }
+    case 'setAttribute':
+      return {
+        attributes: {
+          ...state.attributes,
+          [action.attribute]: action.value
+        },
+        body: state.body
+      }
+      case 'setBody':
+        return {
+          ...state,
+          'body': action.body
+        }
+      default:
+        // Un supported!
+  }
+  return state
+}
+
 
 /**
  * Opens a thread for a user!
  */
-export const useOwnerThread = (identity) => {
+export const useOwnerThread = (identity, index) => {
   const [loading, setLoading] = useState(true)
-  // we use Personal Open threads
   const [thread, setThread] = useState(null)
-  const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(false)
+  const [note, dispatch] = useReducer(noteReducer, {
+    attributes: {
+      createdAt: new Date().getTime(),
+      updatedAt: new Date().getTime(),
+      author: `${identity}`
+    },
+    body: ""
+  })
 
   useEffect(() => {
     const openSpace = async () => {
@@ -45,26 +74,38 @@ export const useOwnerThread = (identity) => {
       const thread = await space.joinThread('fyi', {
         members: true
       })
+      const items = await thread.getPosts()
+      // if there is an index, yield the note!
+      // Otherwise yield a new note!
+      const item = items[index]
+      if(item) {
+        const note = FrontMatter(item.message)
+        dispatch({
+          type: 'setNote',
+          note,
+        })
+      }
       setThread(thread)
       setLoading(false)
     }
 
     openSpace()
-  }, [identity])
+  }, [identity, index])
 
-
-  const save = async (note) => {
-    setSaved(false)
-    setSaving(true)
-    await thread.post(buildContent(note))
-    setSaved(true)
-    setSaving(false)
-    // Mark as saved
-    setTimeout(() => {
-      setSaved(false)
-    }, 1000)
+  const setNoteAttribute = (attribute, value) => {
+    dispatch({type: 'setAttribute', attribute, value})
   }
 
-  return { thread, loading, save, saved, error, saving }
+  const setNoteBody = (body) => {
+    dispatch({type: 'setBody', body})
+  }
+
+  const save = async () => {
+    setSaving(true)
+    await thread.post(buildContent(note))
+    setSaving(false)
+  }
+
+  return { setNoteAttribute, setNoteBody, thread, note, loading, save, saving }
 
 }

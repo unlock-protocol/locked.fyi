@@ -9,6 +9,12 @@ export const useLocks = (locks = []) => {
   }
 
   useEffect(() => {
+    if(!locks || !locks.length) {
+      setLocked(false)
+      setLoading(false)
+      return
+    }
+
     const eventHandler = (event) => {
       setLocked(event.detail === 'locked')
       setLoading(false)
