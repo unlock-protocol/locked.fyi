@@ -41,7 +41,7 @@ const Editor = ({identity, note: index}) => {
       }} />
       <label htmlFor="locks">Locks (coma-separated)</label>
       <input type="text" id="locks" name="locks" value={note.attributes?.locks} onChange={(event) => {
-        setNoteAttribute('locks', event.target.value.split(/[\W]+/).filter(x => !!x).map(x => `"${x}"`))
+        setNoteAttribute('locks', event.target.value.split(/[\W]+/).filter(x => !!x))
       }} />
 
       {/* Source: https://github.com/andrerpena/react-mde */}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Box from '3box'
+import {sortThread} from '../utils/sortThread'
 
 /**
  * Yields the thread
@@ -13,7 +14,7 @@ export const useThread = (threadAddress) => {
   useEffect(() => {
     const openSpace = async () => {
       const thread = await Box.getThreadByAddress(threadAddress)
-      setThread(thread.reverse())
+      setThread(sortThread(thread))
       setLoading(false)
     }
 

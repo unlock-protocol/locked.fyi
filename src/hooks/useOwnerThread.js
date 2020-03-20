@@ -1,6 +1,7 @@
 import { useState, useEffect, useReducer} from 'react'
 import Box from '3box'
 import FrontMatter from 'front-matter'
+import {sortThread} from '../utils/sortThread'
 
 /**
  * util function to build the markdown file
@@ -8,11 +9,11 @@ import FrontMatter from 'front-matter'
  */
 const buildContent = (note) => {
   const locks = (note.attributes.locks || []).map(lock => {
-    return `  - ${lock}
+    return `  - "${lock}"
 `
   }).join('')
   return `---
-createdAt: ${note.attributes.createdAt}
+createdAt: ${note.attributes.createdAt || new Date().getTime()}
 updatedAt: ${new Date().getTime()}
 title: ${note.attributes.title}
 author: "${note.attributes.author}"
@@ -74,6 +75,7 @@ export const useOwnerThread = (identity, index) => {
 
   useEffect(() => {
     const openSpace = async () => {
+      setLoading(true)
       if(!identity) {
         setLoading(false)
         return
@@ -84,7 +86,7 @@ export const useOwnerThread = (identity, index) => {
         members: true
       })
       setThread(thread)
-      const items = (await thread.getPosts()).reverse()
+      const items = sortThread(await thread.getPosts())
       // if there is an index, yield the note!
       // Otherwise yield a new note!
       const item = items[index]
@@ -94,6 +96,11 @@ export const useOwnerThread = (identity, index) => {
         dispatch({
           type: 'setNote',
           note,
+        })
+      } else {
+        dispatch({
+          type: 'setNote',
+          note: newNote(identity),
         })
       }
       setLoading(false)
