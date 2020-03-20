@@ -47,6 +47,7 @@ export const Note = ({thread: threadAddress, note: index}) => {
   const identity = useContext(IdentityContext)
 
   const {note, error, loading} = useNote(thread, index)
+
   if(error) {
     return <p>{error}</p>
   }

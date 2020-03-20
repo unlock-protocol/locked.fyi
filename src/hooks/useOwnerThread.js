@@ -7,11 +7,13 @@ import FrontMatter from 'front-matter'
  * @param {*} note
  */
 const buildContent = (note) => {
-  const locks = note.attributes.locks.map(lock => {
+  const locks = (note.attributes.locks || []).map(lock => {
     return `  - ${lock}
 `
   }).join('')
   return `---
+createdAt: ${note.attributes.createdAt}
+updatedAt: ${new Date().getTime()}
 title: ${note.attributes.title}
 author: "${note.attributes.author}"
 locks:
@@ -46,6 +48,19 @@ const noteReducer = (state, action) => {
   return state
 }
 
+const newNote = (identity) => {
+  return {
+    attributes: {
+      title: '',
+      locks: [],
+      createdAt: new Date().getTime(),
+      updatedAt: new Date().getTime(),
+      author: `${identity}`
+    },
+    body: ""
+  }
+}
+
 
 /**
  * Opens a thread for a user!
@@ -54,14 +69,8 @@ export const useOwnerThread = (identity, index) => {
   const [loading, setLoading] = useState(true)
   const [thread, setThread] = useState(null)
   const [saving, setSaving] = useState(false)
-  const [note, dispatch] = useReducer(noteReducer, {
-    attributes: {
-      createdAt: new Date().getTime(),
-      updatedAt: new Date().getTime(),
-      author: `${identity}`
-    },
-    body: ""
-  })
+  const [postId, setPostId] = useState(null)
+  const [note, dispatch] = useReducer(noteReducer, newNote(identity))
 
   useEffect(() => {
     const openSpace = async () => {
@@ -74,18 +83,19 @@ export const useOwnerThread = (identity, index) => {
       const thread = await space.joinThread('fyi', {
         members: true
       })
-      const items = await thread.getPosts()
+      setThread(thread)
+      const items = (await thread.getPosts()).reverse()
       // if there is an index, yield the note!
       // Otherwise yield a new note!
       const item = items[index]
       if(item) {
+        setPostId(item.postId)
         const note = FrontMatter(item.message)
         dispatch({
           type: 'setNote',
           note,
         })
       }
-      setThread(thread)
       setLoading(false)
     }
 
@@ -100,12 +110,29 @@ export const useOwnerThread = (identity, index) => {
     dispatch({type: 'setBody', body})
   }
 
+  /**
+   * Saves a story!
+   */
   const save = async () => {
     setSaving(true)
+    if (postId) {
+      await thread.deletePost(postId)
+    }
     await thread.post(buildContent(note))
     setSaving(false)
   }
 
-  return { setNoteAttribute, setNoteBody, thread, note, loading, save, saving }
+  const destroy = async () => {
+    setSaving(true)
+    await thread.deletePost(postId)
+    dispatch({
+      type: 'setNote',
+      note: newNote(identity),
+    })
+
+    setSaving(false)
+  }
+
+  return { setNoteAttribute, setNoteBody, thread, note, loading, save, destroy, saving }
 
 }
