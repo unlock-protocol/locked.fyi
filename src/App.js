@@ -17,7 +17,7 @@ function useQuery() {
 
 const Routes = () => {
   let query = useQuery();
-  const thread = query.get("thread");
+  const address = query.get("address");
   const note = query.get("note");
 
   return (
@@ -27,9 +27,9 @@ const Routes = () => {
         <Write note={note} />
       </Route>
       <Route path="/">
-        {thread && note && <Note note={note} thread={thread} />}
-        {thread && !note && <Read thread={thread} />}
-        {!thread && <Home />}
+        {address && note && <Note note={note} address={address} />}
+        {address && !note && <Read address={address} />}
+        {!address && <Home />}
       </Route>
     </Switch>
   </Layout>)

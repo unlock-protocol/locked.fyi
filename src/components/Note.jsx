@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import { useNote } from '../hooks/useNote'
-import { useThread } from '../hooks/useThread'
+import { useAddress } from '../hooks/useAddress'
 import { Markdown } from 'react-showdown'
 import {Link} from "react-router-dom";
 import {useLocks} from '../hooks/useLocks'
@@ -42,8 +42,8 @@ export const Author = ({address}) => {
  * Note component
  * @param {*} param0
  */
-export const Note = ({thread: threadAddress, note: index}) => {
-  const {thread} = useThread(threadAddress)
+export const Note = ({address, note: index}) => {
+  const {thread} = useAddress(address)
   const identity = useContext(IdentityContext)
 
   const {note, error, loading} = useNote(thread, index)
@@ -55,7 +55,7 @@ export const Note = ({thread: threadAddress, note: index}) => {
     return <Loading />
   }
 
-  const threadPath = `/?thread=${threadAddress}`
+  const threadPath = `/?address=${address}`
   const editPath = `/write?note=${index}`
   const viewedByAuthor = identity === note.attributes.author
 
