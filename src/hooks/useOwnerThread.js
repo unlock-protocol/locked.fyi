@@ -140,6 +140,6 @@ export const useOwnerThread = (identity, index) => {
     setSaving(false)
   }
 
-  return { setNoteAttribute, setNoteBody, thread, note, loading, save, destroy, saving }
+  return { setNoteAttribute, setNoteBody, thread, note, loading, save, postId, destroy, saving }
 
 }

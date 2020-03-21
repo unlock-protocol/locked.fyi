@@ -16,7 +16,7 @@ const converter = new Showdown.Converter({
 
 
 const Editor = ({identity, note: index}) => {
-  const {thread, note, setNoteAttribute, setNoteBody, loading, save, destroy, saving} = useOwnerThread(identity, index)
+  const {thread, note, setNoteAttribute, setNoteBody, loading, save, destroy, saving, postId} = useOwnerThread(identity, index)
 
   const [selectedTab, setSelectedTab] = useState("write");
 
@@ -57,7 +57,7 @@ const Editor = ({identity, note: index}) => {
       {!saving &&
       <button type="submit">Save</button>}
       {saving && <span>Saving</span>}
-      <button type="button" onClick={destroy}>Destroy</button>
+      {postId && <button type="button" onClick={destroy}>Destroy</button>}
     </form>
   );
 }
