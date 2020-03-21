@@ -55,7 +55,7 @@ export const Note = ({address, note: index}) => {
     return <Loading />
   }
 
-  const threadPath = `/?address=${address}`
+  const threadPath = `/${address}`
   const editPath = `/write?note=${index}`
   const viewedByAuthor = identity === note.attributes.author
 

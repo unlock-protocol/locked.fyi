@@ -12,7 +12,7 @@ export const Thread = ({thread, address}) => {
     <ul>
       {thread.map((entry, index) => {
         const note = FrontMatter(entry.message)
-        const notePath = `/?address=${address}&note=${index}`
+        const notePath = `/${address}/${index}`
         return (<li key={entry.postId}>
           <Link to={notePath}>{note.attributes.title}</Link>
         </li>)

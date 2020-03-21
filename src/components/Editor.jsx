@@ -30,7 +30,7 @@ const Editor = ({identity, note: index}) => {
     return false
   }
 
-  const threadPath = `/?address=${identity}`
+  const threadPath = `/${identity}`
 
   return (
     <form className="container" onSubmit={onSave}>
