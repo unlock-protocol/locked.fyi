@@ -125,7 +125,8 @@ export const useOwnerThread = (identity, index) => {
     if (postId) {
       await thread.deletePost(postId)
     }
-    await thread.post(buildContent(note))
+    const newPostId = await thread.post(buildContent(note))
+    setPostId(newPostId)
     setSaving(false)
   }
 
@@ -136,7 +137,7 @@ export const useOwnerThread = (identity, index) => {
       type: 'setNote',
       note: newNote(identity),
     })
-
+    setPostId(null)
     setSaving(false)
   }
 
