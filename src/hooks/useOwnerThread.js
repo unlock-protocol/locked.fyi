@@ -1,7 +1,7 @@
 import { useState, useEffect, useReducer} from 'react'
 import Box from '3box'
-import FrontMatter from 'front-matter'
 import {sortThread} from '../utils/sortThread'
+import {parseNote} from '../utils/parseNote'
 
 /**
  * util function to build the markdown file
@@ -13,6 +13,7 @@ const buildContent = (note) => {
 `
   }).join('')
   return `---
+id: ${note.attributes.id}
 createdAt: ${note.attributes.createdAt || new Date().getTime()}
 updatedAt: ${new Date().getTime()}
 title: ${note.attributes.title}
@@ -52,6 +53,7 @@ const noteReducer = (state, action) => {
 const newNote = (identity) => {
   return {
     attributes: {
+      id: null,
       title: '',
       locks: [],
       createdAt: new Date().getTime(),
@@ -69,6 +71,7 @@ const newNote = (identity) => {
 export const useOwnerThread = (identity, index) => {
   const [loading, setLoading] = useState(true)
   const [thread, setThread] = useState(null)
+  const [space, setSpace] = useState(null)
   const [saving, setSaving] = useState(false)
   const [postId, setPostId] = useState(null)
   const [note, dispatch] = useReducer(noteReducer, newNote(identity))
@@ -82,6 +85,7 @@ export const useOwnerThread = (identity, index) => {
       }
       const box = await Box.openBox(identity, window.ethereum)
       const space = await box.openSpace('locked')
+      setSpace(space)
       const thread = await space.joinThread('fyi', {
         members: true
       })
@@ -89,10 +93,13 @@ export const useOwnerThread = (identity, index) => {
       const items = sortThread(await thread.getPosts())
       // if there is an index, yield the note!
       // Otherwise yield a new note!
-      const item = items[index]
+      const item = items.find(item =>
+        item.note.attributes.id.toString() === index
+      )
+
       if(item) {
         setPostId(item.postId)
-        const note = FrontMatter(item.message)
+        const note = await parseNote(item)
         dispatch({
           type: 'setNote',
           note,
@@ -124,6 +131,15 @@ export const useOwnerThread = (identity, index) => {
     setSaving(true)
     if (postId) {
       await thread.deletePost(postId)
+    } else {
+      // This is a new note! Let's get the note index from the users' space
+      // And increase it!
+      let nextNoteId = await space.private.get('nextNoteId')
+      if (!nextNoteId) {
+        nextNoteId = (await thread.getPosts()).length
+      }
+      note.attributes.id = nextNoteId
+      await space.private.set('nextNoteId', nextNoteId+1)
     }
     const newPostId = await thread.post(buildContent(note))
     setPostId(newPostId)

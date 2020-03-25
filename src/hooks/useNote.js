@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import FrontMatter from 'front-matter'
 
 /**
- * Yields the thread
+ * Yields the note
  * @param {*} lockAddress
  * @param {*} userAddress
  */
@@ -12,10 +11,16 @@ export const useNote = (thread, index) => {
 
   useEffect(() => {
     if(thread) {
-      const item = thread[index]
-      const note = FrontMatter(item.message)
-      setNote(note)
-      setLoading(false)
+      const item = thread.find(item =>
+        item.note.attributes.id.toString() === index
+      )
+      if (item) {
+        setNote(item.note)
+        setLoading(false)
+      } else {
+        // TODO: show error!
+        console.error('Item not found')
+      }
     }
   }, [index, thread])
 

@@ -3,7 +3,7 @@ import {sortThread} from '../utils/sortThread'
 
 import Box from '3box'
 
-export const useAddress = (address, index) => {
+export const useAddress = (address) => {
   const [thread, setThread] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -14,7 +14,7 @@ export const useAddress = (address, index) => {
       setLoading(false)
     }
     openSpace()
-  })
+  }, [address])
 
   return {loading, thread}
 }
