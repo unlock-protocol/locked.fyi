@@ -14,7 +14,8 @@
     "react-router-dom": "5.1.2",
     "react-scripts": "3.4.0",
     "react-showdown": "1.6.0",
-    "showdown": "^1.9.1"
+    "showdown": "^1.9.1",
+    "styled-components": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
