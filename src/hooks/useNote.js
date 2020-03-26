@@ -12,7 +12,7 @@ export const useNote = (thread, index) => {
   useEffect(() => {
     if(thread) {
       const item = thread.find(item =>
-        item.note.attributes.id.toString() === index
+        item.note?.attributes?.id?.toString() === index
       )
       if (item) {
         setNote(item.note)

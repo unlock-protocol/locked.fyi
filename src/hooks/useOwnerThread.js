@@ -93,9 +93,9 @@ export const useOwnerThread = (identity, index) => {
       const items = sortThread(await thread.getPosts())
       // if there is an index, yield the note!
       // Otherwise yield a new note!
-      const item = items.find(item =>
-        item.note.attributes.id.toString() === index
-      )
+      const item = items.find(item => {
+        return item?.note?.attributes?.id?.toString() === index
+      })
 
       if(item) {
         setPostId(item.postId)
@@ -131,19 +131,25 @@ export const useOwnerThread = (identity, index) => {
     setSaving(true)
     if (postId) {
       await thread.deletePost(postId)
-    } else {
+    }
+    if (!note.attributes.id) {
       // This is a new note! Let's get the note index from the users' space
       // And increase it!
       let nextNoteId = await space.private.get('nextNoteId')
       if (!nextNoteId) {
         nextNoteId = (await thread.getPosts()).length
       }
-      note.attributes.id = nextNoteId
-      await space.private.set('nextNoteId', nextNoteId+1)
+        note.attributes.id = nextNoteId
+        await space.private.set('nextNoteId', nextNoteId+1)
     }
-    const newPostId = await thread.post(buildContent(note))
-    setPostId(newPostId)
-    setSaving(false)
+
+    if (note.attributes.id) {
+      const newPostId = await thread.post(buildContent(note))
+      setPostId(newPostId)
+      setSaving(false)
+    } else {
+      // show error?
+    }
   }
 
   const destroy = async () => {
