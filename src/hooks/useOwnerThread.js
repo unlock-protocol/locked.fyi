@@ -154,12 +154,15 @@ export const useOwnerThread = (identity, index) => {
 
   const destroy = async () => {
     setSaving(true)
-    await thread.deletePost(postId)
-    dispatch({
-      type: 'setNote',
-      note: newNote(identity),
-    })
-    setPostId(null)
+    const confirmed = window.confirm('Are you sure? There is no recovery...')
+    if (confirmed) {
+      await thread.deletePost(postId)
+      dispatch({
+        type: 'setNote',
+        note: newNote(identity),
+      })
+      setPostId(null)
+    }
     setSaving(false)
   }
 
