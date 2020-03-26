@@ -34,7 +34,7 @@ export const Author = ({address}) => {
   if (profile.name) {
     return <span>By {profile.name}</span>
   }
-  return <span>By {address}</span>
+  return <span>By <abbr title={address}>{address.substring(0, 15)}...</abbr></span>
 
 }
 
