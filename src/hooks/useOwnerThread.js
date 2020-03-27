@@ -144,12 +144,16 @@ export const useOwnerThread = (identity, index) => {
     if (!note.attributes.id) {
       // This is a new note! Let's get the note index from the users' space
       // And increase it!
-      let nextNoteId = await space.private.get('nextNoteId')
+      let nextNoteId = await space.private.get('nextNoteId') + 1
       if (!nextNoteId) {
-        nextNoteId = (await thread.getPosts()).length
+        nextNoteId = (await thread.getPosts()).length + 1
       }
-        note.attributes.id = nextNoteId
-        await space.private.set('nextNoteId', nextNoteId+1)
+      const nextNoteIdSaved = await space.private.set('nextNoteId', nextNoteId)
+      if (!nextNoteIdSaved) {
+        console.error('We could not save the next note id! Aborting save')
+        return
+      }
+      note.attributes.id = nextNoteId
     }
 
     if (note.attributes.id) {
@@ -157,6 +161,7 @@ export const useOwnerThread = (identity, index) => {
       setPostId(newPostId)
       setSaving(false)
     } else {
+      console.error('Could not get a postId')
       // show error?
     }
   }

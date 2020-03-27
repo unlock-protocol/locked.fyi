@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 export const useNote = (thread, index) => {
   const [loading, setLoading] = useState(true)
   const [note, setNote] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if(thread) {
@@ -18,11 +19,10 @@ export const useNote = (thread, index) => {
         setNote(item.note)
         setLoading(false)
       } else {
-        // TODO: show error!
-        console.error('Item not found')
+        setError('Note not found!')
       }
     }
   }, [index, thread])
 
-  return {note, loading}
+  return {note, loading, error}
 }
