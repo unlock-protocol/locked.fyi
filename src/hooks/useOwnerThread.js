@@ -1,3 +1,4 @@
+import removeMarkdown from 'remove-markdown'
 import { useState, useEffect, useReducer} from 'react'
 import Box from '3box'
 import {sortThread} from '../utils/sortThread'
@@ -120,7 +121,15 @@ export const useOwnerThread = (identity, index) => {
     dispatch({type: 'setAttribute', attribute, value})
   }
 
+  /**
+   * sets the note body
+   * @param {*} body
+   */
   const setNoteBody = (body) => {
+    // We should try to extract the title from this!
+    // The title is the first line
+    const firstLine = body.split('\n')[0]
+    setNoteAttribute('title', removeMarkdown(firstLine))
     dispatch({type: 'setBody', body})
   }
 
