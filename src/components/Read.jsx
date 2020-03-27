@@ -5,7 +5,6 @@ import {Loading} from './Loading'
 
 export const Thread = ({thread, address}) => {
   return <section>
-    <p>Read notes for {address}</p>
     {!thread.length && <p>No notes have been published for this lock yet!</p>}
     <ul>
       {thread.map((entry, index) => {
