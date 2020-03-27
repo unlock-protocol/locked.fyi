@@ -88,7 +88,7 @@ const Header =styled.header`
   }
 `
 
-const Button=styled.button`
+export const Button=styled.button`
   font-size: 0.8em;
   width: 100px;
   height: 40px;
@@ -99,6 +99,9 @@ const Button=styled.button`
   text-decoration:none;
   cursor: pointer;
   background-color: #ff6771;
+  &:disabled {
+    background-color: #cccccc;
+  }
   color: white;
   font-weight: bold;
   &:hover {

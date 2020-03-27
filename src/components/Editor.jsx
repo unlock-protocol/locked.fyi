@@ -1,10 +1,11 @@
+import styled from "styled-components"
 import React, {useState} from 'react';
 import ReactMde from "react-mde";
 import * as Showdown from "showdown";
 import "react-mde/lib/styles/css/react-mde-all.css";
 import {Link} from "react-router-dom";
 import {Loading} from './Loading'
-
+import {Button } from './Layout'
 import {useOwnerThread} from '../hooks/useOwnerThread'
 
 const converter = new Showdown.Converter({
@@ -30,6 +31,7 @@ const Editor = ({identity, note: index}) => {
     return false
   }
 
+  const notePath = `/${identity}/${note.attributes.id}`
 
   return (
     <form className="container" onSubmit={onSave}>
@@ -48,11 +50,21 @@ const Editor = ({identity, note: index}) => {
           Promise.resolve(converter.makeHtml(markdown))
         }
       />
-      {!saving &&
-      <button type="submit">Save</button>}
-      {saving && <span>Saving</span>}
-      {postId && <button type="button" onClick={destroy}>Destroy</button>}
+      <Actions>
+        <Button type="submit" disabled={saving} >{saving ? 'Saving' : 'Save'}</Button>
+        {postId && <Button type="button" disabled={saving} onClick={destroy}>Destroy</Button>}
+      </Actions>
+      <div>
+      ➡ <Link to={notePath}>{note.attributes.title}</Link>
+      </div>
     </form>
   );
 }
+
 export default Editor
+
+const Actions = styled.div`
+  margin-top: 10px;
+  display: flex;
+  grid-gap: 10px;
+`
