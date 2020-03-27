@@ -2,8 +2,29 @@ import styled from "styled-components"
 import React from 'react';
 import {Link} from "react-router-dom";
 import {useIdentity} from '../hooks/useIdentity'
+import {useProfile} from '../hooks/useProfile'
 
 export const IdentityContext = React.createContext(null);
+
+const emoji = ['👊','👌','🙌','👋','👍','🖖']
+
+export const ConnectUser = ({address}) => {
+  const {loading, profile} = useProfile(address)
+  if(loading) {
+    return <Identity>&nbsp;</Identity>
+  }
+
+  const handEmoji = new Date().getHours() % emoji.length
+
+  let name = profile.name || address
+
+  return (
+      <Identity title={name}>
+        <Emoji role="img" aria-label="hi!">{emoji[handEmoji]}</Emoji>
+        {name.split(/[ ,]+/)[0].substring(0, 7)}
+      </Identity>
+   )
+}
 
 
 export const Layout = ({children}) => {
@@ -17,10 +38,7 @@ export const Layout = ({children}) => {
         <nav>
           <AuthenticateButton onClick={authenticate}>Log-in</AuthenticateButton>
         </nav>}
-        {identity &&
-        <nav>
-          <span>You are {identity}!</span>
-        </nav>}
+        {identity && <nav><ConnectUser address={identity} /></nav>}
         <nav>
           <StyledLink to='/write'><WriteButton>Write</WriteButton></StyledLink>
         </nav>
@@ -89,12 +107,9 @@ const Button=styled.button`
 `
 
 const AuthenticateButton = styled(Button)`
-
 `
 
 const WriteButton = styled(Button)`
-
-
 `
 
 const StyledLink = styled(Link)`
@@ -104,3 +119,18 @@ const StyledLink = styled(Link)`
         text-decoration: none;
     }
 `;
+
+const Identity = styled.abbr`
+  border-bottom: none !important;
+  cursor: inherit !important;
+  text-decoration: none !important;
+  display: flex;
+  align-items: center;
+  align-content: center;
+`
+
+const Emoji = styled.span`
+  display: inline-block;
+  font-size: 0.8em;
+  margin-right: 3px;
+`
