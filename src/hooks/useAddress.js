@@ -9,8 +9,12 @@ export const useAddress = (address) => {
 
   useEffect(() => {
     const openSpace = async () => {
-      const thread = await Box.getThread('locked', 'fyi', address, true)
-      setThread(sortThread(thread))
+      try {
+        const thread = await Box.getThread('locked', 'fyi', address, true)
+        setThread(sortThread(thread))
+      } catch (e) {
+        setThread([])
+      }
       setLoading(false)
     }
     openSpace()
