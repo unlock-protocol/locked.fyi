@@ -1,8 +1,9 @@
 import styled from "styled-components"
 import React from 'react';
-import {Link} from "react-router-dom";
+import {Link} from "react-router-dom"
 import {useIdentity} from '../hooks/useIdentity'
 import {useProfile} from '../hooks/useProfile'
+
 
 export const IdentityContext = React.createContext(null);
 
@@ -13,6 +14,7 @@ export const ConnectUser = ({address}) => {
   if(loading) {
     return <Identity>&nbsp;</Identity>
   }
+  const threadPath = `/${address}`
 
   const handEmoji = new Date().getHours() % emoji.length
 
@@ -21,7 +23,7 @@ export const ConnectUser = ({address}) => {
   return (
       <Identity title={name}>
         <Emoji role="img" aria-label="hi!">{emoji[handEmoji]}</Emoji>
-        {name.split(/[ ,]+/)[0].substring(0, 7)}
+        <Link to={threadPath}>{name.split(/[ ,]+/)[0].substring(0, 7)}</Link>
       </Identity>
    )
 }
