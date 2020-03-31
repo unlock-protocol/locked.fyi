@@ -7,6 +7,9 @@ import {Link} from "react-router-dom";
 import {Loading} from './Loading'
 import {Button } from './Layout'
 import {useOwnerThread} from '../hooks/useOwnerThread'
+import { useQuery } from '@apollo/react-hooks';
+import locksByOwner from '../queries/locksByOwner'
+import Select from 'react-select'
 
 const converter = new Showdown.Converter({
   tables: true,
@@ -18,7 +21,11 @@ const converter = new Showdown.Converter({
 
 const Editor = ({identity, note: index}) => {
   const {thread, note, setNoteAttribute, setNoteBody, loading, save, destroy, saving, postId} = useOwnerThread(identity, index)
-
+  const { data: locksData, loading: locksLoading } = useQuery(locksByOwner(), {
+    variables: {
+      owner: identity,
+    },
+  })
   const [selectedTab, setSelectedTab] = useState("write");
 
   if (loading || !thread) {
@@ -31,14 +38,33 @@ const Editor = ({identity, note: index}) => {
     return false
   }
 
+  const locks = locksData?.locks
+
   const notePath = `/${identity}/${note.attributes.id}`
+
+  const lockOptions = locks.map((lock) => {
+    return {
+      value: lock.address,
+      label: lock.name || lock.addresss
+    }
+  });
+
+  const onLockChange = (selected, x) => {
+    console.log(selected.map((option) => option.value))
+    setNoteAttribute('locks', selected.map((option) => option.value))
+  }
+
+  const selectedLocks = lockOptions.filter((lock) => {
+    return note.attributes?.locks.indexOf(lock.value) > -1
+  })
+
 
   return (
     <form className="container" onSubmit={onSave}>
-      <label htmlFor="locks">Locks (coma-separated)</label>
-      <input type="text" id="locks" name="locks" value={note.attributes?.locks} onChange={(event) => {
-        setNoteAttribute('locks', event.target.value.split(/[\W]+/).filter(x => !!x))
-      }} />
+
+      <label htmlFor="locks">Locks: </label>
+
+      <LockSelect isMulti isLoading={locksLoading} value={selectedLocks} onChange={onLockChange} options={lockOptions} />
 
       {/* Source: https://github.com/andrerpena/react-mde */}
       <ReactMde
@@ -67,4 +93,8 @@ const Actions = styled.div`
   margin-top: 10px;
   display: flex;
   grid-gap: 10px;
+`
+
+const LockSelect = styled(Select)`
+  margin-bottom: 10px;
 `
