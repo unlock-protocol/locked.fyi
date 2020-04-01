@@ -60,7 +60,7 @@ const Editor = ({ identity, note: index }) => {
   const onLockChange = (selected) => {
     setNoteAttribute(
       "locks",
-      selected.map((option) => option.value)
+      (selected || []).map((option) => option.value)
     )
   }
 
