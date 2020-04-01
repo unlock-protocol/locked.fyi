@@ -6,7 +6,8 @@ import {Link} from "react-router-dom";
 import {useLocks} from '../hooks/useLocks'
 import {useProfile} from '../hooks/useProfile'
 import {Loading} from './Loading'
-import {IdentityContext} from '../components/Layout'
+import {IdentityContext, Button} from '../components/Layout'
+import styled from 'styled-components'
 
 /**
  * Shows the child
@@ -18,7 +19,10 @@ export const Locked = ({locks, children}) => {
     return <Loading />
   }
   if (locked) {
-    return <p><button onClick={unlock}>Unlock</button></p>
+    return <CallToAction>
+      This note, like all notes on locked.fyi is locked. It's not (just) about the money, it's about <a target="_blank" rel="noopener noreferrer" href="https://unlock-protocol.com/blog/its-time-to-unlock-the-web/">using a better business model for the web</a>, one which does not rely on stealing attention or abusing your privacy.
+      <UnlockButton onClick={unlock}>Unlock</UnlockButton>
+    </CallToAction>
   }
   return children
 }
@@ -72,3 +76,18 @@ export const Note = ({address, note: index}) => {
 }
 
 export default Note
+
+const CallToAction = styled.p`
+  font-family: 'Bellota Text', cursive;
+  text-align: center;
+  align-items: center;
+  margin: 30px 10px;
+  color: grey;
+  justify-items: center;
+`
+
+const UnlockButton = styled(Button)`
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+`
