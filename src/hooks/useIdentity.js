@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState } from "react"
 
-export const useIdentity = (did) => {
+export const useIdentity = () => {
   const [identity, setIdentity] = useState(null)
 
   const authenticate = async () => {
@@ -8,10 +8,11 @@ export const useIdentity = (did) => {
       const userAddresses = await window.ethereum.enable()
       setIdentity(userAddresses[0])
     } else {
-      alert('You need to use a browser with an injected web3 wallet!')
+      // eslint-disable-next-line no-alert
+      alert("You need to use a browser with an injected web3 wallet!")
     }
   }
-  return {identity, authenticate}
+  return { identity, authenticate }
 }
 
 export default useIdentity

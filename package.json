@@ -11,6 +11,7 @@
     "apollo-boost": "0.4.7",
     "front-matter": "3.1.0",
     "graphql": "14.6.0",
+    "prop-types": "15.7.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-mde": "^8.0.2",
@@ -26,6 +27,7 @@
     "start": "react-scripts start",
     "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
+    "lint": "eslint --ext=js --ext=jsx src/",
     "eject": "react-scripts eject",
     "postbuild": "react-snap"
   },
@@ -45,6 +47,15 @@
     ]
   },
   "devDependencies": {
+    "eslint": "6.8.0",
+    "eslint-config-airbnb": "18.1.0",
+    "eslint-config-prettier": "6.10.1",
+    "eslint-plugin-import": "2.20.2",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-prettier": "3.1.2",
+    "eslint-plugin-react": "7.19.0",
+    "eslint-plugin-react-hooks": "2.5.1",
+    "prettier": "2.0.2",
     "react-snap": "1.23.0"
   }
 }

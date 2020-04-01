@@ -1,7 +1,6 @@
-import { useState, useEffect} from 'react'
-import {sortThread} from '../utils/sortThread'
-
-import Box from '3box'
+import { useState, useEffect } from "react"
+import Box from "3box"
+import { sortThread } from "../utils/sortThread"
 
 export const useAddress = (address) => {
   const [thread, setThread] = useState(null)
@@ -10,8 +9,13 @@ export const useAddress = (address) => {
   useEffect(() => {
     const openSpace = async () => {
       try {
-        const thread = await Box.getThread('locked', 'fyi', address, true)
-        setThread(sortThread(thread))
+        const lockedFyiThread = await Box.getThread(
+          "locked",
+          "fyi",
+          address,
+          true
+        )
+        setThread(sortThread(lockedFyiThread))
       } catch (e) {
         setThread([])
       }
@@ -20,5 +24,7 @@ export const useAddress = (address) => {
     openSpace()
   }, [address])
 
-  return {loading, thread}
+  return { loading, thread }
 }
+
+export default useAddress

@@ -1,61 +1,96 @@
-import React, {useContext} from 'react';
-import { useNote } from '../hooks/useNote'
-import { useAddress } from '../hooks/useAddress'
-import { Markdown } from 'react-showdown'
-import {Link} from "react-router-dom";
-import {useLocks} from '../hooks/useLocks'
-import {useProfile} from '../hooks/useProfile'
-import {Loading} from './Loading'
-import {IdentityContext, Button} from '../components/Layout'
-import styled from 'styled-components'
+import React, { useContext } from "react"
+import PropTypes from "prop-types"
+import { Markdown } from "react-showdown"
+import { Link } from "react-router-dom"
+import styled from "styled-components"
+import { useNote } from "../hooks/useNote"
+import { useAddress } from "../hooks/useAddress"
+import { useLocks } from "../hooks/useLocks"
+import { useProfile } from "../hooks/useProfile"
+import { Loading } from "./Loading"
+import { IdentityContext, Button } from "./Layout"
 
 /**
  * Shows the child
  * @param {*} param0
  */
-export const Locked = ({locks, children}) => {
-  const {locked, loading, unlock} = useLocks(locks)
-  if(loading) {
+export const Locked = ({ locks, children }) => {
+  const { locked, loading, unlock } = useLocks(locks)
+  if (loading) {
     return <Loading />
   }
   if (locked) {
-    return <CallToAction>
-      This note, like all notes on locked.fyi is locked. It's not (just) about the money, it's about <a target="_blank" rel="noopener noreferrer" href="https://unlock-protocol.com/blog/its-time-to-unlock-the-web/">using a better business model for the web</a>, one which does not rely on stealing attention or abusing your privacy.
-      <UnlockButton onClick={unlock}>Unlock</UnlockButton>
-    </CallToAction>
+    return (
+      <CallToAction>
+        This note, like all notes on locked.fyi is locked. It&apos;s not (just)
+        about the money, it&apos;s about{" "}
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://unlock-protocol.com/blog/its-time-to-unlock-the-web/"
+        >
+          using a better business model for the web
+        </a>
+        , one which does not rely on stealing attention or abusing your privacy.
+        <UnlockButton onClick={unlock}>Unlock</UnlockButton>
+      </CallToAction>
+    )
   }
   return children
 }
 
-export const Author = ({address}) => {
-  const {loading, profile} = useProfile(address)
-  if(loading) {
+export const Author = ({ address }) => {
+  const { loading, profile } = useProfile(address)
+  if (loading) {
     return <span>&nbsp;</span>
   }
   if (profile.website) {
-    return <span>By <a target="_blank" rel="noopener noreferrer" href={profile.website}>{profile.name}</a></span>
+    return (
+      <span>
+        By
+        <a target="_blank" rel="noopener noreferrer" href={profile.website}>
+          {profile.name}
+        </a>
+      </span>
+    )
   }
   if (profile.name) {
-    return <span>By {profile.name}</span>
+    return (
+      <span>
+        By
+        {profile.name}
+      </span>
+    )
   }
-  return <span>By <abbr title={address}>{address.substring(0, 15)}...</abbr></span>
+  return (
+    <span>
+      By
+      <abbr title={address}>
+        {address.substring(0, 15)}
+        ...
+      </abbr>
+    </span>
+  )
+}
 
+Author.propTypes = {
+  address: PropTypes.string.isRequired,
 }
 
 /**
  * Note component
  * @param {*} param0
  */
-export const Note = ({address, note: index}) => {
-  const {thread} = useAddress(address)
+export const Note = ({ address, note: index }) => {
+  const { thread } = useAddress(address)
   const identity = useContext(IdentityContext)
 
-  const {note, error, loading} = useNote(thread, index)
+  const { note, error, loading } = useNote(thread, index)
 
-  if(error) {
+  if (error) {
     return <p>{error}</p>
   }
-  if(loading) {
+  if (loading) {
     return <Loading />
   }
 
@@ -63,22 +98,36 @@ export const Note = ({address, note: index}) => {
   const editPath = `/write?note=${index}`
   const viewedByAuthor = identity === note.attributes.author
 
-  return <article>
-    <Author address={note.attributes.author} />
-    <Locked locks={note.attributes.locks}>
-      <Markdown markup={note.body}></Markdown>
-    </Locked>
-  <footer>
-    <nav>Back to <Link to={threadPath}>Thread</Link></nav>
-    {viewedByAuthor && <nav><Link to={editPath}>Edit</Link></nav>}
-  </footer>
-  </article>
+  return (
+    <article>
+      <Author address={note.attributes.author} />
+      <Locked locks={note.attributes.locks}>
+        <Markdown markup={note.body} />
+      </Locked>
+      <footer>
+        <nav>
+          Back to
+          <Link to={threadPath}>Thread</Link>
+        </nav>
+        {viewedByAuthor && (
+          <nav>
+            <Link to={editPath}>Edit</Link>
+          </nav>
+        )}
+      </footer>
+    </article>
+  )
+}
+
+Note.propTypes = {
+  address: PropTypes.string.isRequired,
+  note: PropTypes.string.isRequired,
 }
 
 export default Note
 
 const CallToAction = styled.p`
-  font-family: 'Bellota Text', cursive;
+  font-family: "Bellota Text", cursive;
   text-align: center;
   align-items: center;
   margin: 30px 10px;

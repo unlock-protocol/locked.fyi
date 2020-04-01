@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react"
 
 /**
  * Yields the note
@@ -11,18 +11,20 @@ export const useNote = (thread, index) => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if(thread) {
-      const item = thread.find(item =>
-        item.note?.attributes?.id?.toString() === index
+    if (thread) {
+      const item = thread.find(
+        (_item) => _item.note.attributes.id.toString() === index
       )
       if (item) {
         setNote(item.note)
         setLoading(false)
       } else {
-        setError('Note not found!')
+        setError("Note not found!")
       }
     }
   }, [index, thread])
 
-  return {note, loading, error}
+  return { note, loading, error }
 }
+
+export default useNote

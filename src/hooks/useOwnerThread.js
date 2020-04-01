@@ -1,18 +1,20 @@
-import removeMarkdown from 'remove-markdown'
-import { useState, useEffect, useReducer} from 'react'
-import Box from '3box'
-import {sortThread} from '../utils/sortThread'
-import {parseNote} from '../utils/parseNote'
+import removeMarkdown from "remove-markdown"
+import { useState, useEffect, useReducer } from "react"
+import Box from "3box"
+import { sortThread } from "../utils/sortThread"
+import { parseNote } from "../utils/parseNote"
 
 /**
  * util function to build the markdown file
  * @param {*} note
  */
 const buildContent = (note) => {
-  const locks = (note.attributes.locks || []).map(lock => {
-    return `  - "${lock}"
+  const locks = (note.attributes.locks || [])
+    .map(
+      (lock) => `  - "${lock}"
 `
-  }).join('')
+    )
+    .join("")
   return `---
 id: ${note.attributes.id}
 createdAt: ${note.attributes.createdAt || new Date().getTime()}
@@ -23,48 +25,44 @@ locks:
 ${locks}
 ---
 ${note.body}`
-
 }
 
 const noteReducer = (state, action) => {
   switch (action.type) {
-    case 'setNote':
+    case "setNote":
       return {
-        ...action.note
+        ...action.note,
       }
-    case 'setAttribute':
+    case "setAttribute":
       return {
         attributes: {
           ...state.attributes,
-          [action.attribute]: action.value
+          [action.attribute]: action.value,
         },
-        body: state.body
+        body: state.body,
       }
-      case 'setBody':
-        return {
-          ...state,
-          'body': action.body
-        }
-      default:
-        // Un supported!
+    case "setBody":
+      return {
+        ...state,
+        body: action.body,
+      }
+    default:
+    // Un supported!
   }
   return state
 }
 
-const newNote = (identity) => {
-  return {
-    attributes: {
-      id: null,
-      title: '',
-      locks: [],
-      createdAt: new Date().getTime(),
-      updatedAt: new Date().getTime(),
-      author: `${identity}`
-    },
-    body: ""
-  }
-}
-
+const newNote = (identity) => ({
+  attributes: {
+    id: null,
+    title: "",
+    locks: [],
+    createdAt: new Date().getTime(),
+    updatedAt: new Date().getTime(),
+    author: `${identity}`,
+  },
+  body: "",
+})
 
 /**
  * Opens a thread for a user!
@@ -80,34 +78,34 @@ export const useOwnerThread = (identity, index) => {
   useEffect(() => {
     const openSpace = async () => {
       setLoading(true)
-      if(!identity) {
+      if (!identity) {
         setLoading(false)
         return
       }
       const box = await Box.openBox(identity, window.ethereum)
-      const space = await box.openSpace('locked')
-      setSpace(space)
-      const thread = await space.joinThread('fyi', {
-        members: true
+      const lockedSpacec = await box.openSpace("locked")
+      setSpace(lockedSpacec)
+      const fyiThread = await lockedSpacec.joinThread("fyi", {
+        members: true,
       })
-      setThread(thread)
-      const items = sortThread(await thread.getPosts())
+      setThread(fyiThread)
+      const items = sortThread(await fyiThread.getPosts())
       // if there is an index, yield the note!
       // Otherwise yield a new note!
-      const item = items.find(item => {
-        return item?.note?.attributes?.id?.toString() === index
-      })
+      const item = items.find(
+        (i) => i.note && i.note.attributes.id.toString() === index
+      )
 
-      if(item) {
+      if (item) {
         setPostId(item.postId)
-        const note = await parseNote(item)
+        const existingNote = await parseNote(item)
         dispatch({
-          type: 'setNote',
-          note,
+          type: "setNote",
+          note: existingNote,
         })
       } else {
         dispatch({
-          type: 'setNote',
+          type: "setNote",
           note: newNote(identity),
         })
       }
@@ -118,7 +116,7 @@ export const useOwnerThread = (identity, index) => {
   }, [identity, index])
 
   const setNoteAttribute = (attribute, value) => {
-    dispatch({type: 'setAttribute', attribute, value})
+    dispatch({ type: "setAttribute", attribute, value })
   }
 
   /**
@@ -128,9 +126,9 @@ export const useOwnerThread = (identity, index) => {
   const setNoteBody = (body) => {
     // We should try to extract the title from this!
     // The title is the first line
-    const firstLine = body.split('\n')[0]
-    setNoteAttribute('title', removeMarkdown(firstLine))
-    dispatch({type: 'setBody', body})
+    const firstLine = body.split("\n")[0]
+    setNoteAttribute("title", removeMarkdown(firstLine))
+    dispatch({ type: "setBody", body })
   }
 
   /**
@@ -144,13 +142,14 @@ export const useOwnerThread = (identity, index) => {
     if (!note.attributes.id) {
       // This is a new note! Let's get the note index from the users' space
       // And increase it!
-      let nextNoteId = await space.private.get('nextNoteId') + 1
+      let nextNoteId = (await space.private.get("nextNoteId")) + 1
       if (!nextNoteId) {
         nextNoteId = (await thread.getPosts()).length + 1
       }
-      const nextNoteIdSaved = await space.private.set('nextNoteId', nextNoteId)
+      const nextNoteIdSaved = await space.private.set("nextNoteId", nextNoteId)
       if (!nextNoteIdSaved) {
-        console.error('We could not save the next note id! Aborting save')
+        // eslint-disable-next-line no-console
+        console.error("We could not save the next note id! Aborting save")
         return
       }
       note.attributes.id = nextNoteId
@@ -161,18 +160,20 @@ export const useOwnerThread = (identity, index) => {
       setPostId(newPostId)
       setSaving(false)
     } else {
-      console.error('Could not get a postId')
+      // eslint-disable-next-line no-console
+      console.error("Could not get a postId")
       // show error?
     }
   }
 
   const destroy = async () => {
     setSaving(true)
-    const confirmed = window.confirm('Are you sure? There is no recovery...')
+    // eslint-disable-next-line no-alert
+    const confirmed = window.confirm("Are you sure? There is no recovery...")
     if (confirmed) {
       await thread.deletePost(postId)
       dispatch({
-        type: 'setNote',
+        type: "setNote",
         note: newNote(identity),
       })
       setPostId(null)
@@ -180,6 +181,17 @@ export const useOwnerThread = (identity, index) => {
     setSaving(false)
   }
 
-  return { setNoteAttribute, setNoteBody, thread, note, loading, save, postId, destroy, saving }
-
+  return {
+    setNoteAttribute,
+    setNoteBody,
+    thread,
+    note,
+    loading,
+    save,
+    postId,
+    destroy,
+    saving,
+  }
 }
+
+export default useOwnerThread

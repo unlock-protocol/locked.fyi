@@ -1,12 +1,10 @@
-import FrontMatter from 'front-matter'
-
-
+import FrontMatter from "front-matter"
 
 const defaultAttributes = {
   id: new Date().getTime(), // Good enough unique id per story?
-  title: '',
-  author: '',
-  preview: '',
+  title: "",
+  author: "",
+  preview: "",
   createdAt: new Date().getTime(),
   updatedAt: new Date().getTime(),
   locks: [],
@@ -24,3 +22,4 @@ export const parseNote = (item) => {
   return formattedNote
 }
 
+export default parseNote
