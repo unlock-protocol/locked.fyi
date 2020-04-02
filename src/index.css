@@ -20,3 +20,7 @@ button {
     monospace;
 }
 
+img {
+  max-width:100%;
+}
+

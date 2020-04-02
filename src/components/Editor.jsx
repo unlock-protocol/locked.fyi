@@ -12,13 +12,9 @@ import { Button } from "./Layout"
 import { useOwnerThread } from "../hooks/useOwnerThread"
 import locksByOwner from "../queries/locksByOwner"
 import { notePath } from "../utils/paths"
+import { showdownOptions } from "../utils/showdown"
 
-const converter = new Showdown.Converter({
-  tables: true,
-  simplifiedAutoLink: true,
-  strikethrough: true,
-  tasklists: true,
-})
+const converter = new Showdown.Converter(showdownOptions())
 
 const Editor = ({ identity, note: index }) => {
   const {

@@ -10,6 +10,7 @@ import { useProfile } from "../hooks/useProfile"
 import { Loading } from "./Loading"
 import { IdentityContext, Button } from "./Layout"
 import { threadPath, writePath } from "../utils/paths"
+import { showdownOptions } from "../utils/showdown"
 
 const defaultLock = "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3"
 
@@ -104,20 +105,15 @@ export const Note = ({ address, note: index }) => {
       ? note.attributes.locks
       : [defaultLock]
 
-  const markdownOptions = {
-    tables: true,
-    emoji: true,
-    // tasklists: true, // TODO: find why this creates issues (unsafe HTML)
-    parseImgDimensions: true,
-    strikethrough: true,
-    openLinksInNewWindow: true,
-  }
-
   return (
     <article>
       <Author address={note.attributes.author} />
       <Locked locks={locks}>
-        <Markdown markup={note.body} options={markdownOptions} />
+        <Markdown
+          dangerouslySetInnerHTML
+          markup={note.body}
+          options={showdownOptions()}
+        />
       </Locked>
       <footer>
         <nav>
