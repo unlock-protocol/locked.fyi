@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import PropTypes from "prop-types"
-import { Markdown } from "react-showdown"
+import Markdown from "react-showdown"
 import { Link } from "react-router-dom"
 import styled from "styled-components"
 import { useNote } from "../hooks/useNote"
@@ -104,11 +104,20 @@ export const Note = ({ address, note: index }) => {
       ? note.attributes.locks
       : [defaultLock]
 
+  const markdownOptions = {
+    tables: true,
+    emoji: true,
+    // tasklists: true, // TODO: find why this creates issues (unsafe HTML)
+    parseImgDimensions: true,
+    strikethrough: true,
+    openLinksInNewWindow: true,
+  }
+
   return (
     <article>
       <Author address={note.attributes.author} />
       <Locked locks={locks}>
-        <Markdown markup={note.body} />
+        <Markdown markup={note.body} options={markdownOptions} />
       </Locked>
       <footer>
         <nav>
