@@ -46,14 +46,17 @@ const Routes = () => {
   return (
     <Layout>
       <Switch>
-        <Route path="/write">
+        <Route path="/notes/write">
           <Write note={note} />
         </Route>
         <Route
-          path="/:address(0x[a-fA-F0-9]{40})/:note([0-9]+)"
+          path="/notes/:address(0x[a-fA-F0-9]{40})/:note([0-9]+)"
           component={NoteMatch}
         />
-        <Route path="/:address(0x[a-fA-F0-9]{40})" component={ReadMatch} />
+        <Route
+          path="/notes/:address(0x[a-fA-F0-9]{40})"
+          component={ReadMatch}
+        />
 
         <Route path="/">
           <Home />

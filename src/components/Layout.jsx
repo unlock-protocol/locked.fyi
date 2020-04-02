@@ -4,6 +4,7 @@ import React from "react"
 import { Link } from "react-router-dom"
 import { useIdentity } from "../hooks/useIdentity"
 import { useProfile } from "../hooks/useProfile"
+import { threadPath, writePath } from "../utils/paths"
 
 export const IdentityContext = React.createContext(null)
 
@@ -14,7 +15,6 @@ export const ConnectUser = ({ address }) => {
   if (loading) {
     return <Identity>&nbsp;</Identity>
   }
-  const threadPath = `/${address}`
 
   const handEmoji = new Date().getHours() % emoji.length
 
@@ -25,7 +25,9 @@ export const ConnectUser = ({ address }) => {
       <Emoji role="img" aria-label="hi!">
         {emoji[handEmoji]}
       </Emoji>
-      <Link to={threadPath}>{name.split(/[ ,]+/)[0].substring(0, 7)}</Link>
+      <Link to={threadPath(address)}>
+        {name.split(/[ ,]+/)[0].substring(0, 7)}
+      </Link>
     </Identity>
   )
 }
@@ -55,7 +57,7 @@ export const Layout = ({ children }) => {
             </nav>
           )}
           <nav>
-            <StyledLink to="/write">
+            <StyledLink to={writePath()}>
               <WriteButton>Write</WriteButton>
             </StyledLink>
           </nav>

@@ -3,16 +3,18 @@ import React from "react"
 import { Link } from "react-router-dom"
 import { useAddress } from "../hooks/useAddress"
 import { Loading } from "./Loading"
+import { notePath } from "../utils/paths"
 
 export const Thread = ({ thread, address }) => (
   <section>
     {!thread.length && <p>No notes have been published for this lock yet!</p>}
     <ul>
       {thread.map((entry) => {
-        const notePath = `/${address}/${entry.note.attributes.id}`
         return (
           <li key={entry.postId}>
-            <Link to={notePath}>{entry.note.attributes.title}</Link>
+            <Link to={notePath(address, entry.note.attributes.id)}>
+              {entry.note.attributes.title}
+            </Link>
           </li>
         )
       })}

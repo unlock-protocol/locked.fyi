@@ -9,6 +9,7 @@ import { useLocks } from "../hooks/useLocks"
 import { useProfile } from "../hooks/useProfile"
 import { Loading } from "./Loading"
 import { IdentityContext, Button } from "./Layout"
+import { threadPath, writePath } from "../utils/paths"
 
 const defaultLock = "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3"
 
@@ -96,8 +97,6 @@ export const Note = ({ address, note: index }) => {
     return <Loading />
   }
 
-  const threadPath = `/${address}`
-  const editPath = `/write?note=${index}`
   const viewedByAuthor = identity === note.attributes.author
 
   const locks =
@@ -113,11 +112,11 @@ export const Note = ({ address, note: index }) => {
       </Locked>
       <footer>
         <nav>
-          Back to <Link to={threadPath}>Thread</Link>
+          Back to <Link to={threadPath(address)}>Thread</Link>
         </nav>
         {viewedByAuthor && (
           <nav>
-            <Link to={editPath}>Edit</Link>
+            <Link to={writePath(index)}>Edit</Link>
           </nav>
         )}
       </footer>

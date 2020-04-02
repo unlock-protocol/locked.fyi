@@ -11,6 +11,7 @@ import { Loading } from "./Loading"
 import { Button } from "./Layout"
 import { useOwnerThread } from "../hooks/useOwnerThread"
 import locksByOwner from "../queries/locksByOwner"
+import { notePath } from "../utils/paths"
 
 const converter = new Showdown.Converter({
   tables: true,
@@ -50,8 +51,6 @@ const Editor = ({ identity, note: index }) => {
 
   const locks = locksData && locksData.locks
 
-  const notePath = `/${identity}/${note.attributes.id}`
-
   const lockOptions = locks.map((lock) => ({
     value: lock.address,
     label: lock.name || lock.addresss,
@@ -64,9 +63,11 @@ const Editor = ({ identity, note: index }) => {
     )
   }
 
-  const selectedLocks = lockOptions.filter(
-    (lock) => note.attributes.locks.indexOf(lock.value) > -1
-  )
+  const selectedLocks = note.attributes.locks
+    ? lockOptions.filter(
+        (lock) => note.attributes.locks.indexOf(lock.value) > -1
+      )
+    : []
 
   return (
     <form className="container" onSubmit={onSave}>
@@ -101,7 +102,14 @@ const Editor = ({ identity, note: index }) => {
         )}
       </Actions>
       <div>
-        ➡ <Link to={notePath}>{note.attributes.title}</Link>
+        {note.attributes.id && (
+          <>
+            ➡{" "}
+            <Link to={notePath(identity, note.attributes.id)}>
+              {note.attributes.title}
+            </Link>
+          </>
+        )}
       </div>
     </form>
   )
