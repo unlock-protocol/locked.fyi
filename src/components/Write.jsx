@@ -24,7 +24,11 @@ const Write = ({ note }) => {
 }
 
 Write.propTypes = {
-  note: PropTypes.objectOf({}).isRequired,
+  note: PropTypes.objectOf({}),
+}
+
+Write.defaultProps = {
+  note: null,
 }
 
 export default Write

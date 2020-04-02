@@ -10,6 +10,8 @@ import { useProfile } from "../hooks/useProfile"
 import { Loading } from "./Loading"
 import { IdentityContext, Button } from "./Layout"
 
+const defaultLock = "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3"
+
 /**
  * Shows the child
  * @param {*} param0
@@ -64,7 +66,7 @@ export const Author = ({ address }) => {
   }
   return (
     <span>
-      By
+      By{" "}
       <abbr title={address}>
         {address.substring(0, 15)}
         ...
@@ -98,16 +100,20 @@ export const Note = ({ address, note: index }) => {
   const editPath = `/write?note=${index}`
   const viewedByAuthor = identity === note.attributes.author
 
+  const locks =
+    note.attributes.locks && note.attributes.locks.length
+      ? note.attributes.locks
+      : [defaultLock]
+
   return (
     <article>
       <Author address={note.attributes.author} />
-      <Locked locks={note.attributes.locks}>
+      <Locked locks={locks}>
         <Markdown markup={note.body} />
       </Locked>
       <footer>
         <nav>
-          Back to
-          <Link to={threadPath}>Thread</Link>
+          Back to <Link to={threadPath}>Thread</Link>
         </nav>
         {viewedByAuthor && (
           <nav>

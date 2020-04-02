@@ -19,8 +19,10 @@ function useQuery() {
 const ReadMatch = ({ match }) => <Read address={match.params.address} />
 
 ReadMatch.propTypes = {
-  match: PropTypes.objectOf({
-    address: PropTypes.string,
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      address: PropTypes.string,
+    }).isRequired,
   }).isRequired,
 }
 
@@ -29,9 +31,11 @@ const NoteMatch = ({ match }) => (
 )
 
 NoteMatch.propTypes = {
-  match: PropTypes.objectOf({
-    address: PropTypes.string,
-    note: PropTypes.string,
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      address: PropTypes.string,
+      note: PropTypes.string,
+    }).isRequired,
   }).isRequired,
 }
 

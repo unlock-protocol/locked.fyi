@@ -21,7 +21,7 @@ export const Thread = ({ thread, address }) => (
 )
 
 Thread.propTypes = {
-  thread: PropTypes.arrayOf({}).isRequired,
+  thread: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   address: PropTypes.string.isRequired,
 }
 
