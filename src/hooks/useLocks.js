@@ -24,7 +24,7 @@ export const useLocks = (locks = []) => {
     window.addEventListener("unlockProtocol", eventHandler)
 
     // resets the config
-    window.unlockProtocol.resetConfig({
+    window.unlockProtocolConfig = {
       locks: locks.reduce(
         (acc, x) => ({
           ...acc,
@@ -32,11 +32,23 @@ export const useLocks = (locks = []) => {
         }),
         {}
       ),
-      callToAction: {},
-    })
+      callToAction: {
+        default: "The content of this note is locked.",
+        confirmed: "Thank for your membership!",
+      },
+    }
+
+    // Load the script, which we'll remove when we unmount
+    const unlockScript = document.createElement("script")
+    unlockScript.src =
+      "https://paywall.unlock-protocol.com/static/unlock.latest.min.js"
+    document.head.appendChild(unlockScript)
 
     // eslint-disable-next-line consistent-return
-    return () => window.removeEventListener("unlockProtocol", eventHandler)
+    return () => {
+      window.removeEventListener("unlockProtocol", eventHandler)
+      document.head.removeChild(unlockScript)
+    }
   }, [locks])
   return { loading, locked, unlock }
 }
