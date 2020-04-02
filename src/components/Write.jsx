@@ -24,7 +24,7 @@ const Write = ({ note }) => {
 }
 
 Write.propTypes = {
-  note: PropTypes.objectOf({}),
+  note: PropTypes.string,
 }
 
 Write.defaultProps = {
