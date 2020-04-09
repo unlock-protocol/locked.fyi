@@ -11,7 +11,7 @@ import { sortThread } from "./sortThread"
  */
 
 const FIRST_THREAD = 1 // We start at one because it's truthy
-const MAX_THREAD_SIZE = 3
+const MAX_THREAD_SIZE = 10
 
 /**
  * Function which yields a new note
