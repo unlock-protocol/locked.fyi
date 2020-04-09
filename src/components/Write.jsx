@@ -10,7 +10,7 @@ const client = new ApolloClient({
   uri: "https://api.thegraph.com/subgraphs/name/unlock-protocol/unlock",
 })
 
-const Write = ({ note }) => {
+const Write = ({ note, thread }) => {
   const identity = useContext(IdentityContext)
   if (!identity) {
     return <>Please authenticate first</>
@@ -18,17 +18,19 @@ const Write = ({ note }) => {
 
   return (
     <ApolloProvider client={client}>
-      <Editor identity={identity} note={note} />
+      <Editor identity={identity} note={note} thread={thread} />
     </ApolloProvider>
   )
 }
 
 Write.propTypes = {
   note: PropTypes.string,
+  thread: PropTypes.string,
 }
 
 Write.defaultProps = {
   note: null,
+  thread: null,
 }
 
 export default Write

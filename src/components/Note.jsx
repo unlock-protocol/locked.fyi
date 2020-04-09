@@ -4,7 +4,6 @@ import Markdown from "react-showdown"
 import { Link } from "react-router-dom"
 import styled from "styled-components"
 import { useNote } from "../hooks/useNote"
-import { useAddress } from "../hooks/useAddress"
 import { useLocks } from "../hooks/useLocks"
 import { useProfile } from "../hooks/useProfile"
 import { Loading } from "./Loading"
@@ -85,12 +84,9 @@ Author.propTypes = {
  * Note component
  * @param {*} param0
  */
-export const Note = ({ address, note: index }) => {
-  const { thread } = useAddress(address)
+export const Note = ({ address, note: index, thread: page }) => {
+  const { note, error, loading } = useNote(address, page, index)
   const identity = useContext(IdentityContext)
-
-  const { note, error, loading } = useNote(thread, index)
-
   if (error) {
     return <p>{error}</p>
   }
@@ -121,7 +117,7 @@ export const Note = ({ address, note: index }) => {
         </nav>
         {viewedByAuthor && (
           <nav>
-            <Link to={writePath(index)}>Edit</Link>
+            <Link to={writePath(page, index)}>Edit</Link>
           </nav>
         )}
       </footer>
@@ -132,6 +128,7 @@ export const Note = ({ address, note: index }) => {
 Note.propTypes = {
   address: PropTypes.string.isRequired,
   note: PropTypes.string.isRequired,
+  thread: PropTypes.string.isRequired,
 }
 
 export default Note

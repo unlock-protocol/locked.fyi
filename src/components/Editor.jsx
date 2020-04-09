@@ -4,30 +4,29 @@ import React, { useState } from "react"
 import ReactMde from "react-mde"
 import * as Showdown from "showdown"
 import "react-mde/lib/styles/css/react-mde-all.css"
-import { Link } from "react-router-dom"
+import { Link, useHistory } from "react-router-dom"
 import { useQuery } from "@apollo/react-hooks"
 import Select from "react-select"
 import { Loading } from "./Loading"
 import { Button } from "./Layout"
 import { useOwnerThread } from "../hooks/useOwnerThread"
 import locksByOwner from "../queries/locksByOwner"
-import { notePath } from "../utils/paths"
+import { notePath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
 
 const converter = new Showdown.Converter(showdownOptions())
 
-const Editor = ({ identity, note: index }) => {
+const Editor = ({ identity, thread: threadId, note: noteId }) => {
   const {
-    thread,
-    note,
     setNoteAttribute,
     setNoteBody,
+    note,
+    noteThread,
     loading,
     save,
     destroy,
-    saving,
-    postId,
-  } = useOwnerThread(identity, index)
+  } = useOwnerThread(identity, threadId, noteId)
+  const history = useHistory()
   const { data: locksData, loading: locksLoading } = useQuery(locksByOwner(), {
     variables: {
       owner: identity,
@@ -35,13 +34,23 @@ const Editor = ({ identity, note: index }) => {
   })
   const [selectedTab, setSelectedTab] = useState("write")
 
-  if (loading || !thread) {
+  if (loading) {
     return <Loading />
   }
 
   const onSave = (event) => {
     event.preventDefault()
-    save()
+    save(note, () => {
+      // TODO change state to indicate saving
+      alert("saved!")
+    })
+    return false
+  }
+
+  const onDestroy = () => {
+    destroy(() => {
+      history.push(writePath())
+    })
     return false
   }
 
@@ -88,21 +97,21 @@ const Editor = ({ identity, note: index }) => {
         }
       />
       <Actions>
-        <Button type="submit" disabled={saving}>
-          {saving ? "Saving" : "Save"}
-        </Button>
-        {postId && (
-          <Button type="button" disabled={saving} onClick={destroy}>
+        <nav>
+          <Button type="submit">Save</Button>
+        </nav>
+        <nav>
+          <Button type="button" onClick={onDestroy}>
             Destroy
           </Button>
-        )}
+        </nav>
       </Actions>
       <div>
         {note.attributes.id && (
           <>
             ➡{" "}
-            <Link to={notePath(identity, note.attributes.id)}>
-              {note.attributes.title}
+            <Link to={notePath(identity, noteThread, note.attributes.id)}>
+              TODO: FIX ME
             </Link>
           </>
         )}
@@ -113,10 +122,12 @@ const Editor = ({ identity, note: index }) => {
 
 Editor.propTypes = {
   identity: PropTypes.string.isRequired,
+  thread: PropTypes.string,
   note: PropTypes.string,
 }
 
 Editor.defaultProps = {
+  thread: null,
   note: null,
 }
 
@@ -124,7 +135,8 @@ export default Editor
 
 const Actions = styled.div`
   margin-top: 10px;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 100px);
   grid-gap: 10px;
 `
 

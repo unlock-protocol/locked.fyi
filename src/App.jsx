@@ -16,24 +16,32 @@ function useQuery() {
   return new URLSearchParams(useLocation().search)
 }
 
-const ReadMatch = ({ match }) => <Read address={match.params.address} />
+const ReadMatch = ({ match }) => (
+  <Read address={match.params.address} thread={match.params.thread} />
+)
 
 ReadMatch.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       address: PropTypes.string,
+      thread: PropTypes.string,
     }).isRequired,
   }).isRequired,
 }
 
 const NoteMatch = ({ match }) => (
-  <Note note={match.params.note} address={match.params.address} />
+  <Note
+    note={match.params.note}
+    thread={match.params.thread}
+    address={match.params.address}
+  />
 )
 
 NoteMatch.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       address: PropTypes.string,
+      thread: PropTypes.string,
       note: PropTypes.string,
     }).isRequired,
   }).isRequired,
@@ -42,19 +50,20 @@ NoteMatch.propTypes = {
 const Routes = () => {
   const query = useQuery()
   const note = query.get("note")
+  const thread = query.get("thread")
 
   return (
     <Layout>
       <Switch>
         <Route path="/notes/write">
-          <Write note={note} />
+          <Write note={note} thread={thread} />
         </Route>
         <Route
-          path="/notes/:address(0x[a-fA-F0-9]{40})/:note([0-9]+)"
+          path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9]+)/:note([0-9]+)"
           component={NoteMatch}
         />
         <Route
-          path="/notes/:address(0x[a-fA-F0-9]{40})"
+          path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9])?"
           component={ReadMatch}
         />
 
