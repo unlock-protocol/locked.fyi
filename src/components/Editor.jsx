@@ -113,11 +113,11 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
         {saving && <Loading />}
       </Actions>
       <div>
-        {note.attributes.id && (
+        {note.attributes.id && note.attributes.id > 0 && (
           <>
             ➡{" "}
             <Link to={notePath(identity, noteThread, note.attributes.id)}>
-              TODO: FIX ME
+              {note.attributes.title}
             </Link>
           </>
         )}
