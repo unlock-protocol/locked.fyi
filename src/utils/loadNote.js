@@ -154,17 +154,18 @@ export const loadNote = async (address, threadId, noteId) => {
     }
   }
 
-  const saveNewItem = async (note) => {
+  const saveNewItem = async (note, callback) => {
     const newNote = { ...note }
     newNote.attributes.id = (await space.private.get("nextNoteId")) || 1
     await thread.post(buildContent(newNote))
     await space.private.set("nextNoteId", newNote.attributes.id + 1) // update the nextNoteId
     item = await getItem(thread, newNote.attributes.id)
+    return callback()
   }
 
   const saveItem = async (note, callback) => {
     if (!item.postId) {
-      return saveNewItem(note)
+      return saveNewItem(note, callback)
     }
     await thread.deletePost(item.postId)
     await thread.post(buildContent(note))

@@ -33,6 +33,7 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
     },
   })
   const [selectedTab, setSelectedTab] = useState("write")
+  const [saving, setSaving] = useState(false)
 
   if (loading) {
     return <Loading />
@@ -40,15 +41,17 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
 
   const onSave = (event) => {
     event.preventDefault()
+    setSaving(true)
     save(note, () => {
-      // TODO change state to indicate saving
-      alert("saved!")
+      setSaving(false)
     })
     return false
   }
 
   const onDestroy = () => {
+    setSaving(true)
     destroy(() => {
+      setSaving(false)
       history.push(writePath())
     })
     return false
@@ -98,13 +101,16 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
       />
       <Actions>
         <nav>
-          <Button type="submit">Save</Button>
+          <Button type="submit" disabled={saving}>
+            Save
+          </Button>
         </nav>
         <nav>
-          <Button type="button" onClick={onDestroy}>
+          <Button type="button" disabled={saving} onClick={onDestroy}>
             Destroy
           </Button>
         </nav>
+        {saving && <Loading />}
       </Actions>
       <div>
         {note.attributes.id && (
