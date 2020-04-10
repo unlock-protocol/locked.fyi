@@ -22,7 +22,7 @@ export const Thread = ({ thread, address, loading }) => {
               <Link
                 to={notePath(address, entry.thread, entry.note.attributes.id)}
               >
-                {entry.note.attributes.title}
+                {entry.note.attributes.title || "_ "}
               </Link>
             </li>
           )

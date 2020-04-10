@@ -10,6 +10,7 @@ import Write from "./components/Write"
 import { Read } from "./components/Read"
 import { Note } from "./components/Note"
 import { Home } from "./components/Home"
+import { Debug } from "./components/Debug"
 import { Layout } from "./components/Layout"
 
 function useQuery() {
@@ -66,6 +67,10 @@ const Routes = () => {
           path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9])?"
           component={ReadMatch}
         />
+
+        <Route path="/debug">
+          <Debug />
+        </Route>
 
         <Route path="/">
           <Home />

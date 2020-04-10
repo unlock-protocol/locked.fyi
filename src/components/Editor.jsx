@@ -79,16 +79,33 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
 
   return (
     <form className="container" onSubmit={onSave}>
-      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-      <label htmlFor="locks">Locks: </label>
-      <LockSelect
-        inputId="locks"
-        isMulti
-        isLoading={locksLoading}
-        value={selectedLocks}
-        onChange={onLockChange}
-        options={lockOptions}
-      />
+      {lockOptions.length > 0 && (
+        <>
+          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+          <label htmlFor="locks">Locks: </label>
+          <LockSelect
+            inputId="locks"
+            isMulti
+            isLoading={locksLoading}
+            value={selectedLocks}
+            onChange={onLockChange}
+            options={lockOptions}
+            noOptionsMessage={() =>
+              "You have not created any lock yet. Your stories will use the community lock..."
+            }
+          />
+        </>
+      )}
+      {lockOptions.length === 0 && (
+        <p>
+          Your note will use the <a href="/#community-lock">community lock</a>
+          ... but you can also{" "}
+          <a href="https://app.unlock-protocol.com/dashboard">
+            deploy your own lock
+          </a>{" "}
+          if you want to monetize your own notes.
+        </p>
+      )}
       {/* Source: https://github.com/andrerpena/react-mde */}
       <ReactMde
         value={note.body}
