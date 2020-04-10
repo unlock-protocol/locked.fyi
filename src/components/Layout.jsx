@@ -43,7 +43,9 @@ export const Layout = ({ children }) => {
     <IdentityContext.Provider value={identity}>
       <Page>
         <Header>
-          <h1>Locked.fyi</h1>
+          <h1>
+            <Link to="/">Locked.fyi</Link>
+          </h1>
           {!identity && (
             <nav>
               <AuthenticateButton onClick={authenticate}>
@@ -99,6 +101,10 @@ const Header = styled.header`
   grid-gap: 10px;
   align-items: center;
   & > h1 {
+    & > a {
+      color: black;
+      text-decoration: none;
+    }
     @media screen and (max-width: 700px) {
       font-size: 1.6em;
     }

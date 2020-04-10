@@ -50,7 +50,7 @@ export const Author = ({ address }) => {
   if (profile.website) {
     return (
       <span>
-        By
+        By{" "}
         <a target="_blank" rel="noopener noreferrer" href={profile.website}>
           {profile.name}
         </a>
@@ -58,12 +58,7 @@ export const Author = ({ address }) => {
     )
   }
   if (profile.name) {
-    return (
-      <span>
-        By
-        {profile.name}
-      </span>
-    )
+    return <span>By {profile.name}</span>
   }
   return (
     <span>
@@ -102,7 +97,7 @@ export const Note = ({ address, note: index, thread: page }) => {
       : [defaultLock]
 
   return (
-    <article>
+    <>
       <Author address={note.attributes.author} />
       <Locked locks={locks}>
         <Markdown
@@ -121,7 +116,7 @@ export const Note = ({ address, note: index, thread: page }) => {
           </nav>
         )}
       </footer>
-    </article>
+    </>
   )
 }
 
