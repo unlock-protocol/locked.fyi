@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "https://unlock-protocol.github.io/locked.fyi/precache-manifest.473febae60fa5fecce1341c3b91f264b.js"
+  "https://unlock-protocol.github.io/locked.fyi/precache-manifest.96bc9c996c14f92084fc13d545bb2632.js"
 );
 
 self.addEventListener('message', (event) => {
