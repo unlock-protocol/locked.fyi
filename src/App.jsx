@@ -85,7 +85,7 @@ const Routes = () => {
 
 function App() {
   return (
-    <Router>
+    <Router basename={process.env.BASE_PATH}>
       <Routes />
     </Router>
   )

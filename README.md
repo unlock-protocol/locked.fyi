@@ -24,6 +24,14 @@ This code is Open Source and available for anyone to fork, and improve (please s
 
 You can also deploy this code if you want to access it from an endpoint you control. We are currently deploying it using Cloudflare's worker infrastructure, but since it's a stati HTML application it can run anywhere!
 
+There are 2 important environment variables to set:
+
+- `PUBLIC_URL` which is the base url (we use `https://locked.fyi`)
+- `BASE_PATH` which is the base path for relative URL if you are not deploying the application at the root of a website.
+
 ### Fission
 
-To deploy using [Fission](https://fission.codes/), make sure you
+To deploy using [Fission](https://fission.codes/), follow these instructions and make sure you set the `BASE_PATH` environment variable if you are deploying this inside a sub-folder of your fission space.
+
+1. Build the project: `yarn build`
+2. Deploy: `fission up build`
