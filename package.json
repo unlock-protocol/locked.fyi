@@ -29,7 +29,8 @@
     "test": "react-scripts test",
     "lint": "eslint --ext=js --ext=jsx src/",
     "eject": "react-scripts eject",
-    "postbuild": "react-snap"
+    "postbuild": "react-snap",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -55,6 +56,7 @@
     "eslint-plugin-prettier": "3.1.2",
     "eslint-plugin-react": "7.19.0",
     "eslint-plugin-react-hooks": "2.5.1",
+    "gh-pages": "2.2.0",
     "husky": "4.2.3",
     "lint-staged": "10.1.1",
     "prettier": "2.0.2",

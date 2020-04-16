@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to Cloudflare
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Build site
-        run: 'npm install && npm run build'
+        run: "npm install && npm run build"
       - name: Publish
         uses: cloudflare/wrangler-action@1.1.0
         with:

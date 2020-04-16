@@ -5,10 +5,9 @@ import { threadPath } from "../utils/paths"
 export const Home = () => (
   <section>
     <p>
-      <a href="https://locked.fyi/">Locked.fyi</a> is a{" "}
-      <em>decentralized blogging platform</em>! The content is stored on{" "}
-      <a href="https://ipfs.io/">IPFS</a>, through the use of{" "}
-      <a href="https://3box.io/">3Box</a>.
+      <a href="/">Locked.fyi</a> is a <em>decentralized blogging platform</em>!
+      The content is stored on <a href="https://ipfs.io/">IPFS</a>, through the
+      use of <a href="https://3box.io/">3Box</a>.
     </p>
     <p>
       Because we think the web needs a <em>better business model</em>, one that
