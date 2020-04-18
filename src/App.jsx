@@ -6,6 +6,8 @@ import {
   Route,
   useLocation,
 } from "react-router-dom"
+import { ApolloProvider } from "@apollo/react-hooks"
+import ApolloClient from "apollo-boost"
 import Write from "./components/Write"
 import { Read } from "./components/Read"
 import { Note } from "./components/Note"
@@ -52,25 +54,31 @@ const Routes = () => {
   const note = query.get("note")
   const thread = query.get("thread")
 
+  const client = new ApolloClient({
+    uri: "https://api.thegraph.com/subgraphs/name/unlock-protocol/unlock",
+  })
+
   return (
     <Layout>
-      <Switch>
-        <Route path="/notes/write">
-          <Write note={note} thread={thread} />
-        </Route>
-        <Route
-          path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9]+)/:note([0-9]+)"
-          component={NoteMatch}
-        />
-        <Route
-          path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9])?"
-          component={ReadMatch}
-        />
+      <ApolloProvider client={client}>
+        <Switch>
+          <Route path="/notes/write">
+            <Write note={note} thread={thread} />
+          </Route>
+          <Route
+            path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9]+)/:note([0-9]+)"
+            component={NoteMatch}
+          />
+          <Route
+            path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9])?"
+            component={ReadMatch}
+          />
 
-        <Route path="/">
-          <Home />
-        </Route>
-      </Switch>
+          <Route path="/">
+            <Home />
+          </Route>
+        </Switch>
+      </ApolloProvider>
     </Layout>
   )
 }

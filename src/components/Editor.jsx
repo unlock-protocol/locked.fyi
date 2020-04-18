@@ -1,20 +1,18 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import PropTypes from "prop-types"
 import styled from "styled-components"
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import ReactMde from "react-mde"
 import * as Showdown from "showdown"
 import "react-mde/lib/styles/css/react-mde-all.css"
 import { Link, useHistory } from "react-router-dom"
-import { useQuery } from "@apollo/react-hooks"
-import Select from "react-select"
 import { useDropzone } from "react-dropzone"
 import { Loading } from "./Loading"
 import { Button } from "./Layout"
 import { useOwnerThread } from "../hooks/useOwnerThread"
-import locksByOwner from "../queries/locksByOwner"
 import { notePath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
+import LockPicker from "./LockPicker"
 
 const converter = new Showdown.Converter(showdownOptions())
 
@@ -72,11 +70,6 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
   })
 
   const history = useHistory()
-  const { data: locksData, loading: locksLoading } = useQuery(locksByOwner(), {
-    variables: {
-      owner: identity,
-    },
-  })
   const [selectedTab, setSelectedTab] = useState("write")
   const [saving, setSaving] = useState(false)
 
@@ -102,13 +95,6 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
     return false
   }
 
-  const locks = locksData && locksData.locks
-
-  const lockOptions = locks.map((lock) => ({
-    value: lock.address,
-    label: lock.name || lock.addresss,
-  }))
-
   const onLockChange = (selected) => {
     setNoteAttribute(
       "locks",
@@ -116,32 +102,13 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
     )
   }
 
-  const selectedLocks = note.attributes.locks
-    ? lockOptions.filter(
-        (lock) => note.attributes.locks.indexOf(lock.value) > -1
-      )
-    : []
-
   return (
     <form className="container" onSubmit={onSave}>
-      {lockOptions.length > 0 && (
-        <>
-          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-          <label htmlFor="locks">Locks: </label>
-          <LockSelect
-            inputId="locks"
-            isMulti
-            isLoading={locksLoading}
-            value={selectedLocks}
-            onChange={onLockChange}
-            options={lockOptions}
-            noOptionsMessage={() =>
-              "You have not created any lock yet. Your stories will use the community lock..."
-            }
-          />
-        </>
-      )}
-      {lockOptions.length === 0 && (
+      <LockPicker
+        identity={identity}
+        onLockChange={onLockChange}
+        currentLocks={note.attributes.locks}
+      >
         <p>
           Your note will use the <a href="/#community-lock">community lock</a>
           ... but you can also{" "}
@@ -150,7 +117,7 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
           </a>{" "}
           if you want to monetize your own notes.
         </p>
-      )}
+      </LockPicker>
 
       <div {...getRootProps()}>
         <input {...getInputProps()} />
@@ -216,8 +183,4 @@ const Actions = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 100px);
   grid-gap: 10px;
-`
-
-const LockSelect = styled(Select)`
-  margin-bottom: 10px;
 `
