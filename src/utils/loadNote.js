@@ -1,4 +1,5 @@
 import Box from "3box"
+import { Buffer } from "buffer"
 import { sortThread } from "./sortThread"
 
 /**
@@ -114,6 +115,8 @@ const getItem = async (thread, noteId) => {
  * @param {*} noteId
  */
 export const loadNote = async (address, threadId, noteId) => {
+  // TODO: support existing IPFS node?
+  // https://docs.3box.io/api/auth#box-openbox-address-ethereumprovider-opts
   const box = await Box.openBox(address, window.ethereum)
 
   // First, open the space.
@@ -155,7 +158,9 @@ export const loadNote = async (address, threadId, noteId) => {
   }
 
   const saveNewItem = async (note, callback) => {
-    const newNote = { ...note }
+    const newNote = {
+      ...note,
+    }
     newNote.attributes.id = (await space.private.get("nextNoteId")) || 1
     await thread.post(buildContent(newNote))
     await space.private.set("nextNoteId", newNote.attributes.id + 1) // update the nextNoteId
@@ -178,7 +183,29 @@ export const loadNote = async (address, threadId, noteId) => {
     return callback()
   }
 
-  return { item, actualThreadId, saveItem, destroyItem }
+  /**
+   * Saves a file to IPFS and return its URL
+   * @param {*} file
+   */
+  const addFile = async (file) => {
+    const ipfs = await Box.getIPFS()
+    // for some reason this does not seem to work?
+    // eslint-disable-next-line no-param-reassign
+    file.content = Buffer.from(await file.arrayBuffer())
+    const source = await ipfs.add(file, {
+      progress: (prog) => console.log(`received: ${prog}`),
+    })
+
+    return `https://ipfs.io/ipfs/${source[0].hash}`
+  }
+
+  return {
+    item,
+    actualThreadId,
+    saveItem,
+    destroyItem,
+    addFile,
+  }
 }
 
 export default {
