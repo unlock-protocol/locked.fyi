@@ -10,6 +10,7 @@ const noteReducer = (state, action) => {
         noteThread: action.noteThread,
         save: action.save,
         destroy: action.destroy,
+        uploadFile: action.uploadFile,
         note: {
           ...action.note,
         },
@@ -44,10 +45,10 @@ const noteReducer = (state, action) => {
  */
 export const useOwnerThread = (identity, threadId, noteId) => {
   const [loading, setLoading] = useState(true)
-  const [{ note, save, destroy, noteThread }, dispatch] = useReducer(
-    noteReducer,
-    {}
-  )
+  const [
+    { note, save, destroy, noteThread, uploadFile },
+    dispatch,
+  ] = useReducer(noteReducer, {})
 
   useEffect(() => {
     const openNote = async () => {
@@ -56,17 +57,20 @@ export const useOwnerThread = (identity, threadId, noteId) => {
         setLoading(false)
         return
       }
-      const { item, saveItem, destroyItem, actualThreadId } = await loadNote(
-        identity,
-        threadId,
-        noteId
-      )
+      const {
+        addFile,
+        item,
+        saveItem,
+        destroyItem,
+        actualThreadId,
+      } = await loadNote(identity, threadId, noteId)
       dispatch({
         type: "setNote",
         note: await parseNote(item),
         save: saveItem,
         destroy: destroyItem,
         noteThread: actualThreadId,
+        uploadFile: addFile,
       })
       // Done loading
       setLoading(false)
@@ -99,6 +103,7 @@ export const useOwnerThread = (identity, threadId, noteId) => {
     loading,
     save,
     destroy,
+    uploadFile,
   }
 }
 
