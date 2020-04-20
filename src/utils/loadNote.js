@@ -1,6 +1,7 @@
 import Box from "3box"
 import { Buffer } from "buffer"
 import { sortThread } from "./sortThread"
+import { NOTES_SPACE_NAME } from "../constants"
 
 /**
  * Our data model is a bit unique
@@ -120,7 +121,7 @@ export const loadNote = async (address, threadId, noteId) => {
   const box = await Box.openBox(address, window.ethereum)
 
   // First, open the space.
-  const space = await box.openSpace("locked")
+  const space = await box.openSpace(NOTES_SPACE_NAME)
 
   let thread
   let actualThreadId

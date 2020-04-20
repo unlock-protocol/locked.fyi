@@ -1,6 +1,7 @@
 import Box from "3box"
 import { useState, useEffect } from "react"
 import { parseNote } from "../utils/parseNote"
+import { NOTES_SPACE_NAME } from "../constants"
 
 /**
  * Yields the note
@@ -16,7 +17,12 @@ export const useNote = (address, page, index) => {
     const loadNote = async () => {
       // Let's load the space, the thread and then the note!
       try {
-        const thread = await Box.getThread("locked", page, address, true)
+        const thread = await Box.getThread(
+          NOTES_SPACE_NAME,
+          page,
+          address,
+          true
+        )
         const foundItem = thread.find((item) => {
           const parsedNote = parseNote(item)
           return parsedNote.attributes.id.toString() === index

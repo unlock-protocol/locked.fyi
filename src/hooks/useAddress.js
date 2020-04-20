@@ -1,6 +1,7 @@
 import { useState, useEffect, useReducer } from "react"
 import Box from "3box"
 import { sortThread } from "../utils/sortThread"
+import { NOTES_SPACE_NAME } from "../constants"
 
 export const useAddress = (address) => {
   const [thread, addNotes] = useReducer((state, notes) => {
@@ -12,7 +13,7 @@ export const useAddress = (address) => {
     const openNextThread = async (threadId, direction, done) => {
       try {
         const lockedFyiThread = await Box.getThread(
-          "locked",
+          NOTES_SPACE_NAME,
           threadId,
           address,
           true
@@ -27,7 +28,7 @@ export const useAddress = (address) => {
     }
 
     const openSpace = async () => {
-      const space = await Box.getSpace(address, "locked")
+      const space = await Box.getSpace(address, NOTES_SPACE_NAME)
       openNextThread(
         space.latestThread,
         (x) => x - 1,
