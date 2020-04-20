@@ -11,6 +11,7 @@ import ApolloClient from "apollo-boost"
 import Write from "./components/Write"
 import { Read } from "./components/Read"
 import { Note } from "./components/Note"
+import { Live } from "./components/Live"
 import { Home } from "./components/Home"
 import { Layout } from "./components/Layout"
 
@@ -49,6 +50,16 @@ NoteMatch.propTypes = {
   }).isRequired,
 }
 
+const LiveMatch = ({ match }) => <Live address={match.params.address} />
+
+LiveMatch.propTypes = {
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      address: PropTypes.string,
+    }).isRequired,
+  }).isRequired,
+}
+
 const Routes = () => {
   const query = useQuery()
   const note = query.get("note")
@@ -72,6 +83,11 @@ const Routes = () => {
           <Route
             path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9])?"
             component={ReadMatch}
+          />
+
+          <Route
+            path="/live/:address(0x[a-fA-F0-9]{40})"
+            component={LiveMatch}
           />
 
           <Route path="/">
