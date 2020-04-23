@@ -74,7 +74,22 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
   const [saving, setSaving] = useState(false)
 
   if (loading) {
-    return <Loading />
+    return (
+      <section>
+        <p>
+          Locked.fyi is a new kind of platform, which only uses decentralized
+          storage for your notes.
+        </p>
+        <p>
+          The first time you use it, your web browser <i>might</i> ask you to
+          sign up to 3 message to <strong>Create a new 3Box profile</strong>,
+          authenticate you and access your <strong>locked-fyi/notes</strong>{" "}
+          space.
+        </p>
+        <p>Next time, it should load a little faster...</p>
+        <Loading />
+      </section>
+    )
   }
 
   const onSave = (event) => {
