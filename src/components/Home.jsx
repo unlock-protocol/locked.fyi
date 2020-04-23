@@ -1,8 +1,9 @@
 import React from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { threadPath } from "../utils/paths"
+import { Loading } from "./Loading"
 
-export const Home = () => (
+const HomeContent = () => (
   <section>
     <p>
       <a href="/">Locked.fyi</a> is a <em>decentralized blogging platform</em>!
@@ -33,4 +34,15 @@ export const Home = () => (
     </p>
   </section>
 )
+
+/**
+ * Shows loading unless we are on the home page (avoids a flash when accessing deep pages directly)
+ */
+export const Home = () => {
+  const { pathname } = useLocation()
+  if (pathname === "/") {
+    return <HomeContent />
+  }
+  return <Loading />
+}
 export default Home
