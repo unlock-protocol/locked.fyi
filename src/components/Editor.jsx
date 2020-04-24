@@ -125,9 +125,16 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
         currentLocks={note.attributes.locks}
       >
         <p>
-          Your note will use the <a href="/#community-lock">community lock</a>
+          Your note will use the{" "}
+          <a target="_blank" rel="noopener noreferrer" href="/#community-lock">
+            community lock
+          </a>
           ... but you can also{" "}
-          <a href="https://app.unlock-protocol.com/dashboard">
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://app.unlock-protocol.com/dashboard"
+          >
             deploy your own lock
           </a>{" "}
           if you want to monetize your own notes.
