@@ -4,8 +4,13 @@ import { sortThread } from "../utils/sortThread"
 import { NOTES_SPACE_NAME } from "../constants"
 
 export const useAddress = (address) => {
-  const [thread, addNotes] = useReducer((state, notes) => {
-    return [...state, ...notes] // TODO: sort again?
+  const [thread, dispatch] = useReducer((state, action) => {
+    if (action.name === "add") {
+      return [...state, ...action.notes] // TODO: sort again?
+    }
+    if (action.name === "reset") {
+      return [] // TODO: sort again?
+    }
   }, [])
   const [loading, setLoading] = useState(true)
 
@@ -18,7 +23,10 @@ export const useAddress = (address) => {
           address,
           true
         )
-        addNotes(sortThread(lockedFyiThread, threadId).reverse())
+        dispatch({
+          name: "add",
+          notes: sortThread(lockedFyiThread, threadId).reverse(),
+        })
         if (threadId > 0) {
           return openNextThread(direction(threadId), direction, done)
         }
@@ -28,6 +36,10 @@ export const useAddress = (address) => {
     }
 
     const openSpace = async () => {
+      // Reset data in reducer!
+      dispatch({
+        name: "reset",
+      })
       const space = await Box.getSpace(address, NOTES_SPACE_NAME)
       openNextThread(
         space.latestThread,
