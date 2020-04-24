@@ -48,7 +48,7 @@ export const Live = ({ address }) => {
     return <>Please authenticate first</>
   }
 
-  if (identity === address) {
+  if (identity.toLowerCase() === address.toLowerCase()) {
     return <Broadcaster address={address} />
   }
   return <Viewer address={address} identity={identity} />

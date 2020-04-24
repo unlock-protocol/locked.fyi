@@ -4,6 +4,20 @@ import { sortThread } from "./sortThread"
 import { NOTES_SPACE_NAME } from "../constants"
 
 /**
+ * States
+ */
+const states = {
+  OPENING_BOX: "OPENING_BOX",
+  OPENING_SPACE: "OPENING_SPACE",
+  OPENING_THREAD: "OPENING_THREAD",
+  RETRIEVING_ITEM: "RETRIEVING_ITEM",
+  SAVING_NEW_ITEM: "SAVING_NEW_ITEM",
+  SAVING_ITEM: "SAVING_ITEM",
+  DESTROYING_ITEM: "DESTROYING_ITEM",
+  SAVING_FILE: "SAVING_FILE",
+}
+
+/**
  * Our data model is a bit unique
  * Threads are pages, with a max size.
  * Note that due to concurrency and race conditions, a given thread may have more items in
@@ -114,13 +128,21 @@ const getItem = async (thread, noteId) => {
  * @param {*} address
  * @param {*} threadId
  * @param {*} noteId
+ * @param {*} stateCallback : used to pass state
  */
-export const loadNote = async (address, threadId, noteId) => {
+export const loadNote = async (
+  address,
+  threadId,
+  noteId,
+  stateCallback = () => {}
+) => {
   // TODO: support existing IPFS node?
   // https://docs.3box.io/api/auth#box-openbox-address-ethereumprovider-opts
+  stateCallback(null, states.OPENING_BOX)
   const box = await Box.openBox(address, window.ethereum)
 
   // First, open the space.
+  stateCallback(null, states.OPENING_SPACE)
   const space = await box.openSpace(NOTES_SPACE_NAME)
 
   let thread
@@ -128,11 +150,13 @@ export const loadNote = async (address, threadId, noteId) => {
   // If there is a threadId and a noteId, we need to open that one
   if (threadId && noteId) {
     actualThreadId = threadId
+    stateCallback(null, states.OPENING_THREAD)
     thread = await openThread(space, threadId)
   } else {
     // If there is no note to open, let's find which thread has space.
     // starting with the highest one.
     // It's important to start with the highest to make sure we keep the notes sorted.
+    stateCallback(null, states.OPENING_THREAD)
     const nextThread = await openEarliestThreadWithSpace(
       space,
       threadId || (await space.public.get("latestThread")) || FIRST_THREAD
@@ -148,6 +172,7 @@ export const loadNote = async (address, threadId, noteId) => {
   let item
 
   if (noteId) {
+    stateCallback(null, states.RETRIEVING_ITEM)
     item = await getItem(thread, noteId)
   }
 
@@ -159,6 +184,7 @@ export const loadNote = async (address, threadId, noteId) => {
   }
 
   const saveNewItem = async (note, callback) => {
+    stateCallback(null, states.SAVING_NEW_ITEM)
     const newNote = {
       ...note,
     }
@@ -170,6 +196,7 @@ export const loadNote = async (address, threadId, noteId) => {
   }
 
   const saveItem = async (note, callback) => {
+    stateCallback(null, states.SAVING_ITEM)
     if (!item.postId) {
       return saveNewItem(note, callback)
     }
@@ -180,6 +207,7 @@ export const loadNote = async (address, threadId, noteId) => {
   }
 
   const destroyItem = async (callback) => {
+    stateCallback(null, states.DESTROYING_ITEM)
     await thread.deletePost(item.postId)
     return callback()
   }
@@ -189,6 +217,7 @@ export const loadNote = async (address, threadId, noteId) => {
    * @param {*} file
    */
   const addFile = async (file) => {
+    stateCallback(null, states.SAVING_FILE)
     const ipfs = await Box.getIPFS()
     // for some reason this does not seem to work?
     // eslint-disable-next-line no-param-reassign

@@ -13,6 +13,7 @@ import { useOwnerThread } from "../hooks/useOwnerThread"
 import { notePath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
 import LockPicker from "./LockPicker"
+import LoadingState from "./LoadingState"
 
 const converter = new Showdown.Converter(showdownOptions())
 
@@ -26,6 +27,7 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
     save,
     destroy,
     uploadFile,
+    loadingState,
   } = useOwnerThread(identity, threadId, noteId)
   const onDrop = async (acceptedFiles) => {
     const { body } = note // keeping track of body, as-is
@@ -74,22 +76,7 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
   const [saving, setSaving] = useState(false)
 
   if (loading) {
-    return (
-      <section>
-        <p>
-          Locked.fyi is a new kind of platform, which only uses decentralized
-          storage for your notes.
-        </p>
-        <p>
-          The first time you use it, your web browser <i>might</i> ask you to
-          sign up to 3 message to <strong>Create a new 3Box profile</strong>,
-          authenticate you and access your <strong>locked-fyi/notes</strong>{" "}
-          space.
-        </p>
-        <p>Next time, it should load a little faster...</p>
-        <Loading />
-      </section>
-    )
+    return <LoadingState loadingState={loadingState} />
   }
 
   const onSave = (event) => {

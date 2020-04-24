@@ -45,6 +45,7 @@ const noteReducer = (state, action) => {
  */
 export const useOwnerThread = (identity, threadId, noteId) => {
   const [loading, setLoading] = useState(true)
+  const [loadingState, setLoadingState] = useState(null)
   const [
     { note, save, destroy, noteThread, uploadFile },
     dispatch,
@@ -63,7 +64,10 @@ export const useOwnerThread = (identity, threadId, noteId) => {
         saveItem,
         destroyItem,
         actualThreadId,
-      } = await loadNote(identity, threadId, noteId)
+      } = await loadNote(identity, threadId, noteId, (error, state) => {
+        setLoadingState(state)
+      })
+
       dispatch({
         type: "setNote",
         note: await parseNote(item),
@@ -104,6 +108,7 @@ export const useOwnerThread = (identity, threadId, noteId) => {
     save,
     destroy,
     uploadFile,
+    loadingState,
   }
 }
 
