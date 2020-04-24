@@ -21,11 +21,8 @@ export const Broadcaster = ({ address }) => {
         currentLocks={locks}
       >
         <p>No lock?</p>
+        <p>Broadcaster</p>
       </LockPicker>
-
-      <textarea id="incoming" />
-      <button type="submit">submit</button>
-      <pre id="outgoing" />
     </form>
   )
 }
@@ -34,9 +31,8 @@ export const Viewer = ({ address, identity }) => {
   useLive(address, identity)
   return (
     <form className="container">
-      <textarea id="incoming" />
-      <button type="submit">submit</button>
-      <pre id="outgoing" />
+      <p>Viewer</p>
+      <video controls />
     </form>
   )
 }
