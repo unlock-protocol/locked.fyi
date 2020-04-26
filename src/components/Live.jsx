@@ -1,13 +1,14 @@
 import PropTypes from "prop-types"
 import React, { useState, useContext } from "react"
+import styled from "styled-components"
 import LockPicker from "./LockPicker"
-import { IdentityContext } from "./Layout"
+import { IdentityContext, Button } from "./Layout"
 import useBroadcast from "../hooks/useBroadcast"
 import useLive from "../hooks/useLive"
 
 export const Broadcaster = ({ address }) => {
   const [locks, setLocks] = useState([])
-  useBroadcast(address)
+  const { goLive, state, viewersCount, playing } = useBroadcast(address)
 
   const onLockChange = (selected) => {
     setLocks((selected || []).map((option) => option.value))
@@ -15,24 +16,46 @@ export const Broadcaster = ({ address }) => {
 
   return (
     <form className="container">
+      <h1>Broadcaster</h1>
+      <p>
+        {state} - {viewersCount} viewers!
+      </p>
       <LockPicker
         identity={address}
         onLockChange={onLockChange}
         currentLocks={locks}
       >
         <p>No lock?</p>
-        <p>Broadcaster</p>
       </LockPicker>
+      <VideoContainer>
+        <Video autoplay="true" onClick={goLive} />
+        <PlayButton type="button" onClick={goLive} hide={playing}>
+          Go live ‣
+        </PlayButton>
+      </VideoContainer>
     </form>
   )
 }
 
+const VideoContainer = styled.div`
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+`
+const PlayButton = styled(Button)`
+  display: ${(props) => (props.hide ? "none" : "block")};
+  position: absolute;
+  width: 130px;
+`
+
 export const Viewer = ({ address, identity }) => {
-  useLive(address, identity)
+  const { state } = useLive(address, identity)
   return (
     <form className="container">
-      <p>Viewer</p>
-      <video controls />
+      <h1>Viewer</h1>
+      <p>{state}</p>
+      <Video controls autoplay="true" />
     </form>
   )
 }
@@ -59,3 +82,9 @@ Live.propTypes = {
 }
 
 export default Live
+
+const Video = styled.video`
+  width: 100%;
+  border: 1px solid hsl(0, 0%, 80%);
+  border-radius: 4px;
+`

@@ -1,100 +1,107 @@
 import SimplePeer from "simple-peer"
 import Box from "3box"
-import { useState, useEffect } from "react"
+import { useState, useCallback } from "react"
 
 export const useBroadcast = (address) => {
-  const [loading, setLoading] = useState(true)
+  const [state, setState] = useState(null)
+  const [viewersCount, setViewersCount] = useState(0)
+  const [playing, setPlaying] = useState(false)
 
-  useEffect(() => {
-    const goLive = async () => {
-      // Flow:
-      // When the owner connects, they should pick a lock
-      // Then, we create a stream and store the `offer` + lock address inside of the 3box storage
-      // Then, we wait!
+  const goLive = useCallback(async () => {
+    setState("Accessing webcam")
 
-      // On the other end, when we load the page, we look for an offer in IPFS.
-      // If there is one, we try to connect to it and then we send the answer in the "ghost" thread.
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    })
 
-      const box = await Box.openBox(address, window.ethereum)
-      const space = await box.openSpace("locked-fyi/live")
+    const video = document.querySelector("video")
+    video.srcObject = stream
+    video.play()
+    setPlaying(true)
 
-      const thread = await space.joinThread("viewers", {
-        ghost: true,
-      })
+    setState("Opening box")
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      })
+    const box = await Box.openBox(address, window.ethereum)
 
-      // There is probably going to be a limit to the number of peers!
-      const peers = {}
+    setState("Opening space")
 
-      // Handling connection requests
-      // We could verify key ownership here!
-      thread.onUpdate(async (update) => {
-        if (update.type === "chat" && update.message) {
-          if (
-            update.message.type === "ping" &&
-            update.message.from !== address
-          ) {
-            console.log("GOT PING")
-            onPing(update, (signal) => {
-              thread.post({
-                from: address,
-                to: update.message.from,
-                type: "ping",
-                signal,
-              })
+    const space = await box.openSpace("locked-fyi/live")
+
+    setState("Opening thread")
+
+    const thread = await space.joinThread("viewers", {
+      ghost: true,
+    })
+
+    // There is probably going to be a limit to the number of peers!
+    const peers = {}
+
+    // Handling connection requests
+    // We could verify key ownership here!
+    thread.onUpdate(async (update) => {
+      if (update.type === "chat" && update.message) {
+        if (update.message.type === "ping" && update.message.from !== address) {
+          onPing(update, (signal) => {
+            thread.post({
+              from: address,
+              to: update.message.from,
+              type: "ping",
+              signal,
             })
-          } else if (update.message.type === "signal") {
-            onSignal(update)
-          }
+          })
+        } else if (update.message.type === "signal") {
+          onSignal(update)
         }
-      })
-      console.log("READY")
-
-      const onSignal = (post) => {
-        const peer = peers[post.message.from]
-        peer.signal(post.message.signal)
       }
+    })
 
-      const onPing = (post, respond) => {
-        // Ok, let's create a new Peer for this user!
-        // Connect to the stream on this page.
-        const peer = new SimplePeer({
-          initiator: true, // TODO: Initiator should be signer of the address!
-          stream,
-          trickle: false,
-        })
-        peer.on("error", (err) => console.log("error", err))
+    setState("Ready")
 
-        // Signaling thru the 3box space so that viewers can connect
-        peer.on("signal", (signal) => {
-          // We need to post back the signal to this user!
-          respond(signal)
-          console.log("SIGNAL", JSON.stringify(signal))
-        })
-
-        // Once connected!
-        peer.on("connect", () => {
-          console.log("CONNECTED")
-          peer.send(`whatever${Math.random()}`)
-        })
-
-        // If we get data
-        peer.on("data", (data) => {
-          console.log(`DATA: ${data}`)
-        })
-
-        peers[post.message.from] = peer
-      }
+    const onSignal = (post) => {
+      // TODO check ownership of a key on the lock!
+      // If they do, move on!
+      // If they don't send a message back asking to unlock!
+      const peer = peers[post.message.from]
+      peer.signal(post.message.signal)
     }
-    setLoading(false)
-    goLive()
-  }, [address])
 
-  return { loading }
+    const onPing = (post, respond) => {
+      // Ok, let's create a new Peer for this user!
+      // Connect to the stream on this page.
+      const peer = new SimplePeer({
+        initiator: true, // TODO: Initiator should be signer of the address!
+        stream,
+        trickle: false,
+      })
+      peer.on("error", () => {
+        // Let's assume the peer was terminated.
+        setViewersCount(viewersCount - 1)
+        peer.destroy()
+        delete peers[post.message.from]
+      })
+
+      // Signaling thru the 3box space so that viewers can connect
+      peer.on("signal", (signal) => {
+        // We need to post back the signal to this user!
+        respond(signal)
+      })
+
+      // Once connected!
+      peer.on("connect", () => {
+        setViewersCount(viewersCount + 1)
+      })
+
+      // If we get data (use for chat backchannel?s)
+      // peer.on("data", (data) => {
+      //   //
+      // })
+
+      peers[post.message.from] = peer
+    }
+  })
+
+  return { goLive, state, viewersCount, playing }
 }
 
 export default useBroadcast

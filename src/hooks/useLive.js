@@ -3,11 +3,14 @@ import Box from "3box"
 import { useState, useEffect } from "react"
 
 export const useLive = (address, identity) => {
-  const [loading, setLoading] = useState(true)
+  const [state, setState] = useState(true)
 
   useEffect(() => {
     const watch = async () => {
+      setState("Opening box")
       const box = await Box.openBox(identity, window.ethereum)
+
+      setState("Opening space")
       const liveSpace = await box.openSpace("locked-fyi/live")
 
       const thread = await liveSpace.joinThread("viewers", {
@@ -35,11 +38,11 @@ export const useLive = (address, identity) => {
         }
       })
 
-      console.log("POSTING")
       thread.post({
         from: identity,
         type: "ping",
       })
+      setState("Waiting for signal")
 
       // The thread is used for signaling
       // 1. When we load this page, we post to it for the address
@@ -63,7 +66,7 @@ export const useLive = (address, identity) => {
         })
         // Once connected!
         peer.on("connect", () => {
-          console.log("CONNECT")
+          setState("Connected!")
           peer.send(`I am viewing! ${Math.random()}`)
         })
         // If we get data
@@ -74,22 +77,25 @@ export const useLive = (address, identity) => {
         peer.on("stream", (stream) => {
           // got remote video stream, now let's show it in a video tag
           const video = document.querySelector("video")
-          console.log("GOT STREAM!")
-          console.log(stream)
+          setState("Started stream!")
+
           if ("srcObject" in video) {
             video.srcObject = stream
           } else {
             video.src = window.URL.createObjectURL(stream) // for older browsers
           }
-          // video.play()
+          try {
+            video.play()
+          } catch (error) {
+            // Autoplay disabled?
+          }
         })
       }
     }
-    setLoading(false)
     watch()
   }, [address, identity])
 
-  return { loading }
+  return { state }
 }
 
 export default useLive
