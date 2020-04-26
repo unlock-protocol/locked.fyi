@@ -5,6 +5,7 @@ const defaultAttributes = {
   title: "",
   author: "",
   preview: "",
+  draft: false,
   createdAt: new Date().getTime(),
   updatedAt: new Date().getTime(),
   locks: [],

@@ -17,12 +17,12 @@ const defaultLock = "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3"
  * Shows the child
  * @param {*} param0
  */
-export const Locked = ({ locks, children }) => {
+export const Locked = ({ locks, skip, children }) => {
   const { locked, loading, unlock } = useLocks(locks)
   if (loading) {
     return <Loading />
   }
-  if (locked) {
+  if (locked && !skip) {
     return (
       <CallToAction>
         This note, like all notes on locked.fyi is locked. It&apos;s not (just)
@@ -80,8 +80,9 @@ Author.propTypes = {
  * @param {*} param0
  */
 export const Note = ({ address, note: index, thread: page }) => {
-  const { note, error, loading } = useNote(address, page, index)
   const identity = useContext(IdentityContext)
+  const { note, error, loading } = useNote(address, page, index)
+
   if (error) {
     return <p>{error}</p>
   }
@@ -91,6 +92,9 @@ export const Note = ({ address, note: index, thread: page }) => {
 
   const viewedByAuthor = identity === note.attributes.author
 
+  if (note.attributes.draft && !viewedByAuthor) {
+    return <p>Note not found!</p>
+  }
   const locks =
     note.attributes.locks && note.attributes.locks.length
       ? note.attributes.locks
@@ -98,24 +102,32 @@ export const Note = ({ address, note: index, thread: page }) => {
 
   return (
     <>
+      {note.attributes.draft && (
+        <Warning>
+          This story is a draft and has not been published yet!{" "}
+          <Link to={writePath(page, index)}>Edit</Link>
+        </Warning>
+      )}
       <Author address={note.attributes.author} />
-      <Locked locks={locks}>
+      <Locked locks={locks} skip={viewedByAuthor}>
         <Markdown
           dangerouslySetInnerHTML
           markup={note.body}
           options={showdownOptions()}
         />
       </Locked>
-      <footer>
-        <nav>
-          Back to <Link to={threadPath(address)}>Thread</Link>
-        </nav>
-        {viewedByAuthor && (
+      {!note.attributes.draft && (
+        <footer>
           <nav>
-            <Link to={writePath(page, index)}>Edit</Link>
+            Back to <Link to={threadPath(address)}>Thread</Link>
           </nav>
-        )}
-      </footer>
+          {viewedByAuthor && (
+            <nav>
+              <Link to={writePath(page, index)}>Edit</Link>
+            </nav>
+          )}
+        </footer>
+      )}
     </>
   )
 }
@@ -141,4 +153,10 @@ const UnlockButton = styled(Button)`
   margin-top: 20px;
   margin-left: auto;
   margin-right: auto;
+`
+
+const Warning = styled.div`
+  padding: 20px;
+  text-align: center;
+  color: #ff6771;
 `

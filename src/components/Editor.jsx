@@ -13,7 +13,8 @@ import { useOwnerThread } from "../hooks/useOwnerThread"
 import { notePath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
 import LockPicker from "./LockPicker"
-import LoadingState from "./LoadingState"
+import { LoadingState } from "./LoadingState"
+import Checkbox from "./Checkbox"
 
 const converter = new Showdown.Converter(showdownOptions())
 
@@ -79,21 +80,19 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
     return <LoadingState loadingState={loadingState} />
   }
 
-  const onSave = (event) => {
+  const onSave = async (event) => {
     event.preventDefault()
     setSaving(true)
-    save(note, () => {
-      setSaving(false)
-    })
+    await save()
+    setSaving(false)
     return false
   }
 
-  const onDestroy = () => {
+  const onDestroy = async () => {
     setSaving(true)
-    destroy(() => {
-      setSaving(false)
-      history.push(writePath())
-    })
+    await destroy()
+    setSaving(false)
+    history.push(writePath())
     return false
   }
 
@@ -103,6 +102,12 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
       (selected || []).map((option) => option.value)
     )
   }
+
+  const draftToggle = () => {
+    setNoteAttribute("draft", !note.attributes.draft)
+  }
+
+  const isDraft = note.attributes.draft
 
   return (
     <form className="container" onSubmit={onSave}>
@@ -127,7 +132,6 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
           if you want to monetize your own notes.
         </p>
       </LockPicker>
-
       <div {...getRootProps()}>
         <input {...getInputProps()} />
         {/* Source: https://github.com/andrerpena/react-mde */}
@@ -142,6 +146,12 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
           }
         />
       </div>
+      <Checkbox
+        name="draft"
+        checked={isDraft}
+        onChange={draftToggle}
+        label="Draft"
+      />
       <Actions>
         <nav>
           <Button type="submit" disabled={saving}>
@@ -190,6 +200,6 @@ const MarkDownEditor = styled(ReactMde)`
 const Actions = styled.div`
   margin-top: 10px;
   display: grid;
-  grid-template-columns: repeat(2, 100px);
+  grid-template-columns: repeat(3, 100px);
   grid-gap: 10px;
 `

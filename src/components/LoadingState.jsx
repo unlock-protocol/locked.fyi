@@ -39,7 +39,11 @@ export const LoadingState = ({ loadingState }) => {
 }
 
 LoadingState.propTypes = {
-  loadingState: PropTypes.string.isRequired,
+  loadingState: PropTypes.string,
+}
+
+LoadingState.defaultProps = {
+  loadingState: null,
 }
 
 const ProgressBar = styled.ul`

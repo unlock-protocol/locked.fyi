@@ -38,6 +38,7 @@ const createNewNote = (identity, id) => ({
     id,
     title: "",
     locks: [],
+    draft: true,
     createdAt: new Date().getTime(),
     updatedAt: new Date().getTime(),
     author: `${identity}`, // Important to stringify 0xaddress (JS considers them hex numbers)
@@ -62,6 +63,7 @@ createdAt: ${note.attributes.createdAt || new Date().getTime()}
 updatedAt: ${new Date().getTime()}
 title: ${note.attributes.title}
 author: "${note.attributes.author}"
+draft: ${!!note.attributes.draft}
 locks:
 ${locks}
 ---
@@ -113,7 +115,7 @@ const openEarliestThreadWithSpace = async (
  * @param {*} thread
  * @param {*} noteId
  */
-const getItem = async (thread, noteId) => {
+const getItemInThread = async (thread, noteId) => {
   // Let's load items in the thread
   const items = sortThread(await thread.getPosts())
   return items.find(
@@ -123,67 +125,20 @@ const getItem = async (thread, noteId) => {
 }
 
 /**
- * Opens a note which can be edited
+ * Adapter to provide notes which can be edited
  * By its owner.
  * @param {*} address
  * @param {*} threadId
  * @param {*} noteId
  * @param {*} stateCallback : used to pass state
  */
-export const loadNote = async (
-  address,
-  threadId,
-  noteId,
-  stateCallback = () => {}
-) => {
-  // TODO: support existing IPFS node?
-  // https://docs.3box.io/api/auth#box-openbox-address-ethereumprovider-opts
-  stateCallback(null, states.OPENING_BOX)
-  const box = await Box.openBox(address, window.ethereum)
-
-  // First, open the space.
-  stateCallback(null, states.OPENING_SPACE)
-  const space = await box.openSpace(NOTES_SPACE_NAME)
-
+const LoadNote = () => {
+  let box
+  let space
   let thread
-  let actualThreadId
-  // If there is a threadId and a noteId, we need to open that one
-  if (threadId && noteId) {
-    actualThreadId = threadId
-    stateCallback(null, states.OPENING_THREAD)
-    thread = await openThread(space, threadId)
-  } else {
-    // If there is no note to open, let's find which thread has space.
-    // starting with the highest one.
-    // It's important to start with the highest to make sure we keep the notes sorted.
-    stateCallback(null, states.OPENING_THREAD)
-    const nextThread = await openEarliestThreadWithSpace(
-      space,
-      threadId || (await space.public.get("latestThread")) || FIRST_THREAD
-    )
-    actualThreadId = nextThread.threadId
-    thread = nextThread.currentThread
-    // Save the actual thread id for faster lookup in the future!
-    await space.public.set("latestThread", actualThreadId)
-  }
-
-  // So we have the thread
-  // Let's now get the item!
   let item
 
-  if (noteId) {
-    stateCallback(null, states.RETRIEVING_ITEM)
-    item = await getItem(thread, noteId)
-  }
-
-  if (!item) {
-    // This item does not exist or could not be found
-    item = {
-      message: buildContent(createNewNote(address, -1)), // use id -1 for new notes!
-    }
-  }
-
-  const saveNewItem = async (note, callback) => {
+  const saveNewItem = async (note, stateCallback = () => {}) => {
     stateCallback(null, states.SAVING_NEW_ITEM)
     const newNote = {
       ...note,
@@ -191,32 +146,31 @@ export const loadNote = async (
     newNote.attributes.id = (await space.private.get("nextNoteId")) || 1
     await thread.post(buildContent(newNote))
     await space.private.set("nextNoteId", newNote.attributes.id + 1) // update the nextNoteId
-    item = await getItem(thread, newNote.attributes.id)
-    return callback()
+    item = await getItemInThread(thread, newNote.attributes.id)
   }
 
-  const saveItem = async (note, callback) => {
+  const saveItem = async (note, stateCallback = () => {}) => {
     stateCallback(null, states.SAVING_ITEM)
     if (!item.postId) {
-      return saveNewItem(note, callback)
+      saveNewItem(note, stateCallback)
+    } else {
+      await thread.deletePost(item.postId)
+      await thread.post(buildContent(note))
+      item = await getItemInThread(thread, note.attributes.id)
     }
-    await thread.deletePost(item.postId)
-    await thread.post(buildContent(note))
-    item = await getItem(thread, note.attributes.id)
-    return callback()
   }
 
-  const destroyItem = async (callback) => {
+  const destroyItem = async (stateCallback = () => {}) => {
     stateCallback(null, states.DESTROYING_ITEM)
     await thread.deletePost(item.postId)
-    return callback()
+    item = null
   }
 
   /**
    * Saves a file to IPFS and return its URL
    * @param {*} file
    */
-  const addFile = async (file) => {
+  const addFile = async (file, stateCallback = () => {}) => {
     stateCallback(null, states.SAVING_FILE)
     const ipfs = await Box.getIPFS()
     // for some reason this does not seem to work?
@@ -229,15 +183,66 @@ export const loadNote = async (
     return `https://ipfs.io/ipfs/${source[0].hash}`
   }
 
+  /**
+   * Retrieves a note and sets the values used in other methods
+   */
+  const getItem = async (
+    address,
+    threadId,
+    noteId,
+    stateCallback = () => {}
+  ) => {
+    // TODO: support existing IPFS node?
+    // https://docs.3box.io/api/auth#box-openbox-address-ethereumprovider-opts
+    stateCallback(null, states.OPENING_BOX)
+    box = await Box.openBox(address, window.ethereum)
+
+    // First, open the space.
+    stateCallback(null, states.OPENING_SPACE)
+    space = await box.openSpace(NOTES_SPACE_NAME)
+
+    let actualThreadId
+
+    // If there is a threadId and a noteId, we need to open that one
+    if (threadId && noteId) {
+      actualThreadId = threadId
+      stateCallback(null, states.OPENING_THREAD)
+      thread = await openThread(space, threadId)
+    } else {
+      // If there is no note to open, let's find which thread has space.
+      // starting with the highest one.
+      // It's important to start with the highest to make sure we keep the notes sorted.
+      stateCallback(null, states.OPENING_THREAD)
+      const nextThread = await openEarliestThreadWithSpace(
+        space,
+        threadId || (await space.public.get("latestThread")) || FIRST_THREAD
+      )
+      actualThreadId = nextThread.threadId
+      thread = nextThread.currentThread
+      // Save the actual thread id for faster lookup in the future!
+      await space.public.set("latestThread", actualThreadId)
+    }
+
+    if (noteId) {
+      stateCallback(null, states.RETRIEVING_ITEM)
+      item = await getItemInThread(thread, noteId)
+    }
+
+    if (!item) {
+      // This item does not exist or could not be found
+      item = {
+        message: buildContent(createNewNote(address, -1)), // use id -1 for new notes!
+      }
+    }
+    return { item, actualThreadId }
+  }
+
   return {
-    item,
-    actualThreadId,
+    getItem,
     saveItem,
     destroyItem,
     addFile,
   }
 }
 
-export default {
-  loadNote,
-}
+export default LoadNote
