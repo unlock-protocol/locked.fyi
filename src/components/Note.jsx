@@ -18,7 +18,7 @@ const defaultLock = "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3"
  * @param {*} param0
  */
 export const Locked = ({ locks, skip, children }) => {
-  const { locked, loading, unlock } = useLocks(locks)
+  const { locked, loading, loadCheckout } = useLocks(locks)
   if (loading) {
     return <Loading />
   }
@@ -35,7 +35,7 @@ export const Locked = ({ locks, skip, children }) => {
           using a better business model for the web
         </a>
         , one which does not rely on stealing attention or abusing your privacy.
-        <UnlockButton onClick={unlock}>Unlock</UnlockButton>
+        <UnlockButton onClick={loadCheckout}>Unlock</UnlockButton>
       </CallToAction>
     )
   }
