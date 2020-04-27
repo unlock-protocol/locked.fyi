@@ -4,7 +4,7 @@ import styled from "styled-components"
 import LockPicker from "./LockPicker"
 import { IdentityContext, Button } from "./Layout"
 import { useBroadcast } from "../hooks/useBroadcast"
-import { useLive, states } from "../hooks/useLive"
+import { useLive } from "../hooks/useLive"
 import { LoadingState } from "./LoadingState"
 
 export const labels = {

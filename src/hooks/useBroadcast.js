@@ -93,7 +93,7 @@ export const useBroadcast = (address, locks) => {
       })
       peer.on("error", () => {
         // Let's assume the peer was terminated.
-        setViewersCount(viewersCount - 1)
+        setViewersCount((count) => count - 1)
         peer.destroy()
         delete peers[post.message.from]
       })
@@ -106,7 +106,7 @@ export const useBroadcast = (address, locks) => {
 
       // Once connected!
       peer.on("connect", () => {
-        setViewersCount(viewersCount + 1)
+        setViewersCount((count) => count + 1)
       })
 
       // If we get data (use for chat backchannel?s)
@@ -116,7 +116,7 @@ export const useBroadcast = (address, locks) => {
 
       peers[post.message.from] = peer
     }
-  }, [address])
+  }, [address, locks])
 
   return { goLive, state, viewersCount, playing }
 }
