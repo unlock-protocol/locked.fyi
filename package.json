@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "@unlock-protocol/paywall": "0.0.3",
     "apollo-boost": "0.4.7",
     "buffer": "5.6.0",
     "front-matter": "3.1.0",

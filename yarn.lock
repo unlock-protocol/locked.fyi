@@ -2433,6 +2433,13 @@
     semver "^6.3.0"
     tsutils "^3.17.1"
 
+"@unlock-protocol/paywall@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@unlock-protocol/paywall/-/paywall-0.0.3.tgz#ab7551eb13f3ecfc3b54f275061fd9e39c89ca18"
+  integrity sha512-4gIbImH1lKMrSqhSpmdIYKYtonA9FwQC3FFN22Y0+QaTnhnu3q6DbzPgv1BYpFBGzgmmZ6R7UFq3Mu/O3jxzMQ==
+  dependencies:
+    postmate "1.5.2"
+
 "@webassemblyjs/ast@1.8.5":
   version "1.8.5"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.8.5.tgz#51b1c5fe6576a34953bf4b253df9f0d490d9e359"
@@ -14226,6 +14233,11 @@ postcss@^7, postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.14, postcss@^7.0.16, po
     chalk "^2.4.2"
     source-map "^0.6.1"
     supports-color "^6.1.0"
+
+postmate@1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/postmate/-/postmate-1.5.2.tgz#d59a78b3780023c5d32225fd40633b364958bdb3"
+  integrity sha512-EHLlEmrUA/hALls49oBrtE7BzDXXjB9EiO4MZpsoO3R/jRuBmD+2WKQuYAbeuVEpTzrPpUTT79z2cz4qaFgPRg==
 
 postmsg-rpc@^2.4.0:
   version "2.4.0"
