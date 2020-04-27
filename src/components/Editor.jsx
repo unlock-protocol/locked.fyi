@@ -77,7 +77,13 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
   const [saving, setSaving] = useState(false)
 
   if (loading) {
-    return <LoadingState loadingState={loadingState} />
+    const labels = {
+      OPENING_BOX: "Opening profile",
+      OPENING_SPACE: "Opening space",
+      OPENING_THREAD: "Opening thread",
+    }
+
+    return <LoadingState loadingState={loadingState} labels={labels} />
   }
 
   const onSave = async (event) => {

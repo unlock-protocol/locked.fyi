@@ -3,14 +3,8 @@ import styled from "styled-components"
 import React from "react"
 import { Loading } from "./Loading"
 
-const labels = {
-  OPENING_BOX: "Opening profile",
-  OPENING_SPACE: "Opening space",
-  OPENING_THREAD: "Opening thread",
-}
-
-export const LoadingState = ({ loadingState }) => {
-  const states = ["OPENING_BOX", "OPENING_SPACE", "OPENING_THREAD"]
+export const LoadingState = ({ loadingState, labels }) => {
+  const states = Object.keys(labels)
 
   let afterLoadingState = false
 
@@ -31,7 +25,7 @@ export const LoadingState = ({ loadingState }) => {
       </ProgressBar>
       <p>
         Locked.fyi is a new kind of platform, which only uses decentralized
-        storage for your notes. It takes a few seconds to load!
+        storage for your data. It takes a few seconds to load!
       </p>
       <Loading />
     </section>
@@ -40,6 +34,7 @@ export const LoadingState = ({ loadingState }) => {
 
 LoadingState.propTypes = {
   loadingState: PropTypes.string,
+  labels: PropTypes.objectOf({}).isRequired,
 }
 
 LoadingState.defaultProps = {
