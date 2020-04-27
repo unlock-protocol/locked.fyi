@@ -1,8 +1,13 @@
 import SimplePeer from "simple-peer"
 import Box from "3box"
 import { useState, useCallback } from "react"
+import { isUnlocked } from "@unlock-protocol/paywall"
 
-export const useBroadcast = (address) => {
+const readOnlyProvider = "https://cloudflare-eth.com/"
+const locksmithUri = "https://locksmith.unlock-protocol.com/"
+
+export const useBroadcast = (address, locks) => {
+  console.log(locks)
   const [state, setState] = useState(null)
   const [viewersCount, setViewersCount] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -48,6 +53,7 @@ export const useBroadcast = (address) => {
               to: update.message.from,
               type: "ping",
               signal,
+              locks,
             })
           })
         } else if (update.message.type === "signal") {
@@ -56,12 +62,24 @@ export const useBroadcast = (address) => {
       }
     })
 
+    // Inform that we joined!
+    thread.post({
+      from: address,
+      type: "up",
+    })
+
     setState("Ready")
 
-    const onSignal = (post) => {
-      // TODO check ownership of a key on the lock!
-      // If they do, move on!
-      // If they don't send a message back asking to unlock!
+    const onSignal = async (post) => {
+      const unlocked = await isUnlocked(
+        post.message.from,
+        { locks },
+        {
+          readOnlyProvider,
+          locksmithUri,
+        }
+      )
+      console.log(unlocked)
       const peer = peers[post.message.from]
       peer.signal(post.message.signal)
     }

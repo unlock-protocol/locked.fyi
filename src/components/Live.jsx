@@ -3,12 +3,21 @@ import React, { useState, useContext } from "react"
 import styled from "styled-components"
 import LockPicker from "./LockPicker"
 import { IdentityContext, Button } from "./Layout"
-import useBroadcast from "../hooks/useBroadcast"
-import useLive from "../hooks/useLive"
+import { useBroadcast } from "../hooks/useBroadcast"
+import { useLive, states } from "../hooks/useLive"
+import { LoadingState } from "./LoadingState"
+
+export const labels = {
+  OPENING_BOX: "Opening Box",
+  OPENING_SPACE: "Opening Space",
+  WAITING_FOR_SIGNAL: "Waiting for Stream",
+  WAITING_FOR_UNLOCK: "Unlocking Stream",
+  CONNECTING_TO_STREAM: "Connecting to Stream",
+}
 
 export const Broadcaster = ({ address }) => {
   const [locks, setLocks] = useState([])
-  const { goLive, state, viewersCount, playing } = useBroadcast(address)
+  const { goLive, state, viewersCount, playing } = useBroadcast(address, locks)
 
   const onLockChange = (selected) => {
     setLocks((selected || []).map((option) => option.value))
@@ -54,7 +63,7 @@ export const Viewer = ({ address, identity }) => {
   return (
     <form className="container">
       <h1>Viewer</h1>
-      <p>{state}</p>
+      <LoadingState loadingState={state} labels={labels} />
       <Video controls autoplay="true" />
     </form>
   )
