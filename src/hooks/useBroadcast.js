@@ -7,7 +7,6 @@ const readOnlyProvider = "https://cloudflare-eth.com/"
 const locksmithUri = "https://locksmith.unlock-protocol.com/"
 
 export const useBroadcast = (address, locks) => {
-  console.log(locks)
   const [state, setState] = useState(null)
   const [viewersCount, setViewersCount] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -117,7 +116,7 @@ export const useBroadcast = (address, locks) => {
 
       peers[post.message.from] = peer
     }
-  })
+  }, [address])
 
   return { goLive, state, viewersCount, playing }
 }
