@@ -11,7 +11,7 @@ import { IdentityContext, Button } from "./Layout"
 import { threadPath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
 
-const defaultLock = "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3"
+export const defaultLock = "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3"
 
 /**
  * Shows the child
