@@ -1,9 +1,8 @@
 import PropTypes from "prop-types"
 import styled from "styled-components"
 import React from "react"
-import { Loading } from "./Loading"
 
-export const LoadingState = ({ loadingState, labels }) => {
+export const LoadingState = ({ loadingState, labels, children }) => {
   const states = Object.keys(labels)
 
   let afterLoadingState = false
@@ -23,11 +22,7 @@ export const LoadingState = ({ loadingState, labels }) => {
           )
         })}
       </ProgressBar>
-      <p>
-        Locked.fyi is a new kind of platform, which only uses decentralized
-        storage for your data. It takes a few seconds to load!
-      </p>
-      <Loading />
+      {children}
     </section>
   )
 }
@@ -35,16 +30,18 @@ export const LoadingState = ({ loadingState, labels }) => {
 LoadingState.propTypes = {
   loadingState: PropTypes.string,
   labels: PropTypes.objectOf({}).isRequired,
+  children: PropTypes.element,
 }
 
 LoadingState.defaultProps = {
   loadingState: null,
+  children: null,
 }
 
 const ProgressBar = styled.ul`
   padding: 0px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
 `
 
 const Step = styled.li`

@@ -83,7 +83,14 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
       OPENING_THREAD: "Opening thread",
     }
 
-    return <LoadingState loadingState={loadingState} labels={labels} />
+    return (
+      <LoadingState loadingState={loadingState} labels={labels}>
+        <p>
+          Locked.fyi is a new kind of platform, which only uses decentralized
+          storage for your data. It takes a few seconds to load!
+        </p>
+      </LoadingState>
+    )
   }
 
   const onSave = async (event) => {
