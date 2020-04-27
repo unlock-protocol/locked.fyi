@@ -34,7 +34,7 @@ export const Unlock = () => {
   /**
    * Invoked to remove script (and handler)
    */
-  const unloadScrcipt = () => {
+  const unloadScript = () => {
     window.removeEventListener("unlockProtocol", eventHandler)
     document.head.removeChild(unlockScript)
     delete window.unlockProtocolConfig
@@ -44,13 +44,12 @@ export const Unlock = () => {
    * Opens the checkout modal
    */
   const loadCheckout = () => {
-    console.log("HAHAHA")
     window.unlockProtocol.loadCheckoutModal()
   }
 
   return {
     loadScript,
-    unloadScrcipt,
+    unloadScript,
     loadCheckout,
   }
 }

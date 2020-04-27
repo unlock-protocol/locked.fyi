@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Unlock } from "../utils/unlock"
 
-const { loadScript, unloadScrcipt, loadCheckout } = Unlock()
+const { loadScript, unloadScript, loadCheckout } = Unlock()
 
 export const useLocks = (locks = []) => {
   const [loading, setLoading] = useState(true)
@@ -23,7 +23,7 @@ export const useLocks = (locks = []) => {
 
     // eslint-disable-next-line consistent-return
     return () => {
-      unloadScrcipt()
+      unloadScript()
     }
   }, [locks])
   return { loading, locked, loadCheckout }
