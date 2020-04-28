@@ -1,0 +1,14 @@
+{
+  "persistentCheckout": true,
+  "icon": "",
+  "callToAction": {
+    "default": "Support Locked.fyi! You will immediately have access to all notes posted without a lock ;)",
+    "pending": "Thanks a lot! You should now be able to read all notes posted on locked.fyi without a lock!",
+    "confirmed": "Thanks a lot! You should now be able to read all notes posted on locked.fyi without a lock!"
+  },
+  "locks": {
+    "0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3": {
+      "name": ""
+    }
+  }
+}
