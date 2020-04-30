@@ -2,11 +2,10 @@ import PropTypes from "prop-types"
 import styled from "styled-components"
 import React from "react"
 import { Link } from "react-router-dom"
-import { useIdentity } from "../hooks/useIdentity"
+import { useWeb3React, UnsupportedChainIdError } from "@web3-react/core"
+import { InjectedConnector } from "@web3-react/injected-connector"
 import { useProfile } from "../hooks/useProfile"
 import { threadPath, writePath } from "../utils/paths"
-
-export const IdentityContext = React.createContext(null)
 
 const emoji = ["👊", "👌", "🙌", "👋", "👍", "🖖"]
 
@@ -37,37 +36,39 @@ ConnectUser.propTypes = {
 }
 
 export const Layout = ({ children }) => {
-  const { authenticate, identity } = useIdentity()
+  const { account, activate } = useWeb3React()
+
+  const connector = new InjectedConnector({
+    supportedChainIds: [1, 3, 4, 5, 42],
+  })
 
   return (
-    <IdentityContext.Provider value={identity}>
-      <Page>
-        <Header>
-          <h1>
-            <Link to="/">Locked.fyi</Link>
-          </h1>
-          {!identity && (
-            <nav>
-              <AuthenticateButton onClick={authenticate}>
-                Log-in
-              </AuthenticateButton>
-            </nav>
-          )}
-          {identity && (
-            <nav>
-              <ConnectUser address={identity} />
-            </nav>
-          )}
+    <Page>
+      <Header>
+        <h1>
+          <Link to="/">Locked.fyi</Link>
+        </h1>
+        {!account && (
           <nav>
-            <StyledLink to={writePath()}>
-              <WriteButton>Write</WriteButton>
-            </StyledLink>
+            <AuthenticateButton onClick={() => activate(connector)}>
+              Log-in
+            </AuthenticateButton>
           </nav>
-        </Header>
+        )}
+        {account && (
+          <nav>
+            <ConnectUser address={account} />
+          </nav>
+        )}
+        <nav>
+          <StyledLink to={writePath()}>
+            <WriteButton>Write</WriteButton>
+          </StyledLink>
+        </nav>
+      </Header>
 
-        <Body>{children}</Body>
-      </Page>
-    </IdentityContext.Provider>
+      <Body>{children}</Body>
+    </Page>
   )
 }
 

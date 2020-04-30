@@ -1,10 +1,10 @@
 import PropTypes from "prop-types"
-import React, { useContext } from "react"
+import React from "react"
 import { Link } from "react-router-dom"
+import { useWeb3React } from "@web3-react/core"
 import { useAddress } from "../hooks/useAddress"
 import { Loading } from "./Loading"
 import { notePath } from "../utils/paths"
-import { IdentityContext } from "./Layout"
 
 const Item = ({ entry, address, viewerIsAuthor }) => {
   if (viewerIsAuthor) {
@@ -39,10 +39,10 @@ Item.propTypes = {
 }
 
 export const Thread = ({ thread, address, loading }) => {
-  const identity = useContext(IdentityContext)
+  const { account } = useWeb3React()
 
   if (!loading && !thread.length) {
-    if (identity !== address) {
+    if (account !== address) {
       return (
         <section>
           <p>No notes have been published for this lock yet!</p>
@@ -64,7 +64,7 @@ export const Thread = ({ thread, address, loading }) => {
             <Item
               entry={entry}
               address={address}
-              viewerIsAuthor={identity === address}
+              viewerIsAuthor={account === address}
             />
           )
         })}

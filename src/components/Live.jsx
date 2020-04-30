@@ -1,8 +1,9 @@
 import PropTypes from "prop-types"
-import React, { useState, useContext } from "react"
+import React, { useState } from "react"
 import styled from "styled-components"
+import { useWeb3React } from "@web3-react/core"
 import LockPicker from "./LockPicker"
-import { IdentityContext, Button } from "./Layout"
+import { Button } from "./Layout"
 import { useBroadcast } from "../hooks/useBroadcast"
 import { useLive } from "../hooks/useLive"
 import { LoadingState } from "./LoadingState"
@@ -74,16 +75,16 @@ export const Viewer = ({ address, identity }) => {
  * @param {*} param0
  */
 export const Live = ({ address }) => {
-  const identity = useContext(IdentityContext)
+  const { account } = useWeb3React()
 
-  if (!identity) {
+  if (!account) {
     return <>Please authenticate first</>
   }
 
-  if (identity.toLowerCase() === address.toLowerCase()) {
+  if (account.toLowerCase() === address.toLowerCase()) {
     return <Broadcaster address={address} />
   }
-  return <Viewer address={address} identity={identity} />
+  return <Viewer address={address} identity={account} />
 }
 
 Live.propTypes = {

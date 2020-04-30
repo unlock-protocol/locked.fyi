@@ -1,13 +1,14 @@
-import React, { useContext } from "react"
+import React from "react"
 import PropTypes from "prop-types"
 import Markdown from "react-showdown"
 import { Link } from "react-router-dom"
 import styled from "styled-components"
+import { useWeb3React } from "@web3-react/core"
 import { useNote } from "../hooks/useNote"
 import { useLocks } from "../hooks/useLocks"
 import { useProfile } from "../hooks/useProfile"
 import { Loading } from "./Loading"
-import { IdentityContext, Button } from "./Layout"
+import { Button } from "./Layout"
 import { threadPath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
 
@@ -80,7 +81,7 @@ Author.propTypes = {
  * @param {*} param0
  */
 export const Note = ({ address, note: index, thread: page }) => {
-  const identity = useContext(IdentityContext)
+  const { account } = useWeb3React()
   const { note, error, loading } = useNote(address, page, index)
 
   if (error) {
@@ -90,7 +91,7 @@ export const Note = ({ address, note: index, thread: page }) => {
     return <Loading />
   }
 
-  const viewedByAuthor = identity === note.attributes.author
+  const viewedByAuthor = account === note.attributes.author
 
   if (note.attributes.draft && !viewedByAuthor) {
     return <p>Note not found!</p>

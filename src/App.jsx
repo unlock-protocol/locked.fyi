@@ -8,6 +8,8 @@ import {
 } from "react-router-dom"
 import { ApolloProvider } from "@apollo/react-hooks"
 import ApolloClient from "apollo-boost"
+import { Web3ReactProvider } from "@web3-react/core"
+import { Web3Provider } from "@ethersproject/providers"
 import Write from "./components/Write"
 import { Read } from "./components/Read"
 import { Note } from "./components/Note"
@@ -70,39 +72,46 @@ const Routes = () => {
   })
 
   return (
-    <Layout>
-      <ApolloProvider client={client}>
-        <Switch>
-          <Route path="/notes/write">
-            <Write note={note} thread={thread} />
-          </Route>
-          <Route
-            path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9]+)/:note([0-9]+)"
-            component={NoteMatch}
-          />
-          <Route
-            path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9])?"
-            component={ReadMatch}
-          />
+    <ApolloProvider client={client}>
+      <Switch>
+        <Route path="/notes/write">
+          <Write note={note} thread={thread} />
+        </Route>
+        <Route
+          path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9]+)/:note([0-9]+)"
+          component={NoteMatch}
+        />
+        <Route
+          path="/notes/:address(0x[a-fA-F0-9]{40})/:thread([0-9])?"
+          component={ReadMatch}
+        />
 
-          <Route
-            path="/live/:address(0x[a-fA-F0-9]{40})"
-            component={LiveMatch}
-          />
+        <Route path="/live/:address(0x[a-fA-F0-9]{40})" component={LiveMatch} />
 
-          <Route path="/">
-            <Home />
-          </Route>
-        </Switch>
-      </ApolloProvider>
-    </Layout>
+        <Route path="/">
+          <Home />
+        </Route>
+      </Switch>
+    </ApolloProvider>
   )
+}
+
+/**
+ *
+ * @param {*} provider
+ */
+function getLibrary(provider) {
+  return new Web3Provider(provider)
 }
 
 function App() {
   return (
     <Router basename={process.env.BASE_PATH}>
-      <Routes />
+      <Web3ReactProvider getLibrary={getLibrary}>
+        <Layout>
+          <Routes />
+        </Layout>
+      </Web3ReactProvider>
     </Router>
   )
 }
