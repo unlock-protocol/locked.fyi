@@ -8,7 +8,7 @@ import { useNote } from "../hooks/useNote"
 import { useLocks } from "../hooks/useLocks"
 import { useProfile } from "../hooks/useProfile"
 import { Loading } from "./Loading"
-import { Button } from "./Layout"
+import { Button } from "./Button"
 import { threadPath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
 
