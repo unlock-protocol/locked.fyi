@@ -21,16 +21,16 @@ export const Layout = ({ children }) => {
         <h1>
           <Link to="/">Locked.fyi</Link>
         </h1>
-        <nav>
+        <Nav right>
           {loading && <Loading />}
           {!loading && !account && <Authenticate />}
           {!loading && account && <ConnectedUser address={account} />}
-        </nav>
-        <nav>
+        </Nav>
+        <Nav>
           <StyledLink to={writePath()}>
             <WriteButton>Write</WriteButton>
           </StyledLink>
-        </nav>
+        </Nav>
       </Header>
 
       <Body>{children}</Body>
@@ -59,12 +59,16 @@ const Body = styled.section`
   grid-row: 3;
 `
 
+const Nav = styled.nav`
+  justify-self: ${(props) => (props.right ? "right" : "center")};
+`
+
 const Header = styled.header`
   grid-row: 1;
   padding-top: 10px;
   grid-column: 2;
   display: grid;
-  grid-template-columns: 1fr 100px 100px;
+  grid-template-columns: 1fr 140px 100px;
   grid-gap: 10px;
   align-items: center;
   & > h1 {
