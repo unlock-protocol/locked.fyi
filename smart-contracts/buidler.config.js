@@ -1,7 +1,7 @@
 usePlugin('@nomiclabs/buidler-waffle')
-usePlugin('buidler-deploy')
-usePlugin('@nomiclabs/buidler-solhint')
-usePlugin('buidler-gas-reporter')
+// usePlugin('buidler-deploy')
+// usePlugin('@nomiclabs/buidler-solhint')
+// usePlugin('buidler-gas-reporter')
 usePlugin('solidity-coverage')
 
 // This is a sample Buidler task. To learn how to create your own go to
@@ -19,8 +19,14 @@ task('accounts', 'Prints the list of accounts', async () => {
 // defaultNetwork, networks, solc, and paths.
 // Go to https://buidler.dev/config/ to learn more
 module.exports = {
+  defaultNetwork: 'buidlerevm',
   // This is a sample solc configuration that specifies which version of solc to use
   solc: {
     version: '0.6.8',
+  },
+  networks: {},
+  gasReporter: {
+    enabled: true,
+    currency: 'USD',
   },
 }
