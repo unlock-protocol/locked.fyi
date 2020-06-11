@@ -5,7 +5,9 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "@openzeppelin/contracts": "^3.0.2",
     "@unlock-protocol/unlock-abi-7": "^1.0.3",
+    "abdk-libraries-solidity": "^2.2.0",
     "buidler-deploy": "^0.4.2"
   },
   "devDependencies": {
