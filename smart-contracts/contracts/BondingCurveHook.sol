@@ -3,22 +3,34 @@ pragma solidity ^0.5.17;
 /**
  * @title BondingCurveHook
  * @author Nick Furfaro
+ * This contract is meant to be registered as a hook,
+ * to be called on each key purchase from a Lock contract.
+ * It tracks the token(key) supply for the lock, and adjusts
+ * the price as the supply grows according to a binary log function,
+ * P = log2(S) / 3.321, which aproximates a base-10 logarithm closely.
  */
 
 import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 // import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@nomiclabs/buidler/console.sol';
+// import '@nomiclabs/buidler/console.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   using ABDKMath64x64 for int128;
   using ABDKMath64x64 for uint256;
+
+  // The number of keys sold using this hook.
   int128 public tokenSupply;
+
+  // temporary. no need to store this, calculate as needed.
   int128 public tokenPrice;
 
-  /**
-  * ABDKMath64x64.sol:
+  // what do I want to log here? price, supply or both? Price can always be calculated offchain... Supply can be looked up as needed onchain as well.
+  event PriceIncrease(int128 indexed _newPrice);
+
+/**
+ * https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMath64x64.sol#L366
  * Smart contract library of mathematical functions operating with signed
  * 64.64-bit fixed point numbers.  Signed 64.64-bit fixed point number is
  * basically a simple fraction whose numerator is signed 128-bit integer and
@@ -30,12 +42,11 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   // The 64.64-bit representation of 3.321
   // (61261637068789420000 / 2^64 = 3.321)
   // The bonding curve we use here is P=log2(S)/3.321,
-  // which aproximates a base-10 logarithm closely. For example:
-  // log10(100) = 1
-  // log10(1,000,000,000) = 9
-  // log2(100)/3.321 = 1.00027
-  // log2(1,000,000,000)/3.321 = 9.00251
+  // which aproximates a base-10 logarithm closely.
   int128 private constant CURVE_MODIFER = 61261637068789420000;
+
+  // 2^64, as used by ABDKMath64x64.sol
+  int128 private constant DENOMINATOR = 18446744073709552000;
 
 
 
@@ -45,6 +56,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     int128 supplyAsInt;
     supplyAsInt = _supply.fromUInt();
     tokenPrice = supplyAsInt.log_2().div(CURVE_MODIFER);
+    emit PriceIncrease(tokenPrice);
   }
 
 
@@ -67,7 +79,11 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     bytes calldata data
   ) external view
     returns (uint minKeyPrice)
-  {}
+  {
+    // get the price for the lock before purchase ic completed.
+    // tokenPrice = tokenSupply.log_2().div(CURVE_MODIFER);
+    // return tokenPrice.toUInt();
+  }
 
   /**
    * @notice If the lock owner has registered an implementer then this hook
@@ -90,7 +106,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     uint pricePaid
   ) external
   {
-    // get current key price from
     // update current supply using internal counter
     // pull author address from calldata
     // inform DAO to mint new share for author
