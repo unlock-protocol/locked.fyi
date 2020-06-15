@@ -1,8 +1,8 @@
 const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants } = require('ethers')
-const chai = require('chai')
+// const chai = require('chai')
 // chai.use(chaiAsPromised)
-const assert = require('assert')
+const { assert } = require('chai')
 const UnlockJSON = require('@unlock-protocol/unlock-abi-7/Unlock.json')
 const LockJSON = require('@unlock-protocol/unlock-abi-7/PublicLock.json')
 const provider = ethers.provider
@@ -41,13 +41,10 @@ describe('Lock Setup', () => {
       'https://locksmith.unlock-protocol.com/api/key/'
     )
 
-    console.log(`Here 4`)
-
     await unlock.setLockTemplate(lockTemplate.address).then((tx) => {
       tx.wait()
     })
     await tx.wait()
-    console.log(`Here 5`)
     let publicLockAddress = await unlock.publicLockAddress()
     console.log(`Lock-Template Address: ${publicLockAddress}`)
     console.log(`Symbol: ${await unlock.globalTokenSymbol()}`)
@@ -61,7 +58,7 @@ describe('Lock Setup', () => {
       'CloneOfLocked.fyi', // Name
       '0x007000000000000000000000' // bytes12 Salt
     )
-    console.log(`Here 6`)
+    console.log(`We're here now...`)
     receipt = await tx.wait()
     console.log(receipt.events)
   })
