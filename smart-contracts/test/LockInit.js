@@ -1,6 +1,7 @@
 const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants } = require('ethers')
-// const { assert } = require('chai-local')
+const chai = require('chai')
+// chai.use(chaiAsPromised)
 const assert = require('assert')
 const UnlockJSON = require('@unlock-protocol/unlock-abi-7/Unlock.json')
 const LockJSON = require('@unlock-protocol/unlock-abi-7/PublicLock.json')
@@ -12,7 +13,7 @@ const LockBytecode = LockJSON.bytecode
 
 describe('Lock Setup', () => {
   before(async () => {
-    const [wallet] = await ethers.getSigners()
+    const [wallet, lockCreator] = await ethers.getSigners()
 
     // deploy a Lock and get the address:
     const Lock = await ethers.getContractFactory(LockABI, LockBytecode, wallet)
@@ -48,17 +49,19 @@ describe('Lock Setup', () => {
     await tx.wait()
     console.log(`Here 5`)
     let publicLockAddress = await unlock.publicLockAddress()
-    console.log(`publicLockAddress: ${publicLockAddress}`)
+    console.log(`Lock-Template Address: ${publicLockAddress}`)
+    console.log(`Symbol: ${await unlock.globalTokenSymbol()}`)
 
     // deploy a lock to mimic the real locked.fyi lock:
-    tx = await unlock.createLock(
+    tx = await unlock.connect(lockCreator).createLock(
       BigNumber.from(60 * 60 * 24 * 365), // 1 year
       '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI  Contract Address
       BigNumber.from('100000000000000000'), // 0.1 DAI  (0.1 / 10 ** 18)
       constants.MaxUint256, // Number of Keys
       'CloneOfLocked.fyi', // Name
-      '0x777777777777777777777777' // bytes12 Salt
+      '0x007000000000000000000000' // bytes12 Salt
     )
+    console.log(`Here 6`)
     receipt = await tx.wait()
     console.log(receipt.events)
   })
