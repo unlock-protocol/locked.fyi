@@ -8,9 +8,12 @@ import { writePath } from "../utils/paths"
 import { ConnectedUser } from "./ConnectedUser"
 import { Authenticate } from "./Authenticate"
 import { Button } from "./Button"
+import { useBox } from "../hooks/useBox"
+import { Loading } from "./Loading"
 
 export const Layout = ({ children }) => {
   const { account } = useWeb3React()
+  const { loading } = useBox(account)
 
   return (
     <Page>
@@ -19,8 +22,9 @@ export const Layout = ({ children }) => {
           <Link to="/">Locked.fyi</Link>
         </h1>
         <nav>
-          {!account && <Authenticate />}
-          {account && <ConnectedUser address={account} />}
+          {loading && <Loading />}
+          {!loading && !account && <Authenticate />}
+          {!loading && account && <ConnectedUser address={account} />}
         </nav>
         <nav>
           <StyledLink to={writePath()}>

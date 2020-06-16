@@ -1,5 +1,5 @@
 import PropTypes from "prop-types"
-import React from "react"
+import React, { useState } from "react"
 import {
   BrowserRouter as Router,
   Switch,
@@ -16,6 +16,7 @@ import { Note } from "./components/Note"
 import { Live } from "./components/Live"
 import { Home } from "./components/Home"
 import { Layout } from "./components/Layout"
+import BoxContent from "./contexts/boxContext"
 
 function useQuery() {
   return new URLSearchParams(useLocation().search)
@@ -105,12 +106,16 @@ function getLibrary(provider) {
 }
 
 function App() {
+  const [box, setBox] = useState(null)
+
   return (
     <Router basename={process.env.BASE_PATH}>
       <Web3ReactProvider getLibrary={getLibrary}>
-        <Layout>
-          <Routes />
-        </Layout>
+        <BoxContent.Provider value={{ setBox, box }}>
+          <Layout>
+            <Routes />
+          </Layout>
+        </BoxContent.Provider>
       </Web3ReactProvider>
     </Router>
   )
