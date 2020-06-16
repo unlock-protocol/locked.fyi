@@ -5,25 +5,27 @@ import BoxContext from "../contexts/boxContext"
 
 // We should set the box and account in a context!
 export const useBox = (address) => {
-  const { setBox } = useContext(BoxContext)
+  const { setBox, setSpace } = useContext(BoxContext)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const loadBox = async () => {
       if (address) {
         setLoading(true)
-        const theBox = await Box.create()
-        await theBox.auth([NOTES_SPACE_NAME], {
+        const box = await Box.create()
+        await box.auth([NOTES_SPACE_NAME], {
           address,
           provider: window.ethereum,
         })
-        setBox(theBox)
+        const space = await box.openSpace(NOTES_SPACE_NAME)
+        setSpace(space)
+        setBox(box)
         setLoading(false)
       }
     }
 
     loadBox()
-  }, [address, setBox])
+  }, [address, setBox, setSpace])
   return { loading }
 }
 

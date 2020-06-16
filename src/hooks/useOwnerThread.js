@@ -1,7 +1,8 @@
 import removeMarkdown from "remove-markdown"
-import { useState, useEffect, useReducer } from "react"
+import { useState, useEffect, useReducer, useContext } from "react"
 import { parseNote } from "../utils/parseNote"
 import LoadNote from "../utils/loadNote"
+import BoxContext from "../contexts/boxContext"
 
 const noteReducer = (state, action) => {
   switch (action.type) {
@@ -38,17 +39,16 @@ const noteReducer = (state, action) => {
 }
 
 /**
- *
- */
-const { getItem, saveItem, destroyItem, addFile } = LoadNote()
-
-/**
  * Opens a thread for a user!
  */
 export const useOwnerThread = (identity, threadId, noteId) => {
   const [loading, setLoading] = useState(true)
-  const [loadingState, setLoadingState] = useState(null)
+  const [currentItem, setCurrentItem] = useState(null)
+  const [currentThread, setCurrentThread] = useState(null)
   const [{ note, noteThread }, dispatch] = useReducer(noteReducer, {})
+  const { space } = useContext(BoxContext)
+
+  const { getItem, saveItem, destroyItem, addFile } = LoadNote(space)
 
   useEffect(() => {
     const openNote = async () => {
@@ -57,20 +57,19 @@ export const useOwnerThread = (identity, threadId, noteId) => {
         setLoading(false)
         return
       }
-      const { item, actualThreadId } = await getItem(
+      const { item, thread, itemThread } = await getItem(
         identity,
         threadId,
-        noteId,
-        (error, state) => {
-          setLoadingState(state)
-        }
+        noteId
       )
 
       dispatch({
         type: "setNote",
         note: await parseNote(item),
-        noteThread: actualThreadId,
+        noteThread: itemThread,
       })
+      setCurrentThread(thread)
+      setCurrentItem(item)
       // Done loading
       setLoading(false)
     }
@@ -110,14 +109,15 @@ export const useOwnerThread = (identity, threadId, noteId) => {
    * Saves a story
    */
   const save = async () => {
-    await saveItem(note)
+    await saveItem(currentItem, currentThread, note)
   }
 
   /**
    * Destroys a story
    */
   const destroy = async () => {
-    await destroyItem()
+    await destroyItem(currentItem, currentThread)
+    setCurrentItem(null) // unset the item
   }
 
   /**
@@ -137,7 +137,6 @@ export const useOwnerThread = (identity, threadId, noteId) => {
     save,
     destroy,
     uploadFile,
-    loadingState,
   }
 }
 

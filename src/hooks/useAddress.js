@@ -42,7 +42,7 @@ export const useAddress = (address) => {
       })
       const space = await Box.getSpace(address, NOTES_SPACE_NAME)
       openNextThread(
-        space.latestThread,
+        space.latestThread, // What if the user does not have a thread?
         (x) => x - 1,
         () => setLoading(false)
       )

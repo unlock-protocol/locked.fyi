@@ -7,18 +7,20 @@ import * as Showdown from "showdown"
 import "react-mde/lib/styles/css/react-mde-all.css"
 import { Link, useHistory } from "react-router-dom"
 import { useDropzone } from "react-dropzone"
+import { useWeb3React } from "@web3-react/core"
 import { Loading } from "./Loading"
 import { Button } from "./Button"
 import { useOwnerThread } from "../hooks/useOwnerThread"
 import { notePath, writePath } from "../utils/paths"
 import { showdownOptions } from "../utils/showdown"
 import LockPicker from "./LockPicker"
-import { LoadingState } from "./LoadingState"
 import Checkbox from "./Checkbox"
 
 const converter = new Showdown.Converter(showdownOptions())
 
-const Editor = ({ identity, thread: threadId, note: noteId }) => {
+const Editor = ({ thread: threadId, note: noteId }) => {
+  const { account } = useWeb3React()
+
   const {
     setNoteAttribute,
     setNoteBody,
@@ -28,8 +30,8 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
     save,
     destroy,
     uploadFile,
-    loadingState,
-  } = useOwnerThread(identity, threadId, noteId)
+  } = useOwnerThread(account, threadId, noteId)
+
   const onDrop = async (acceptedFiles) => {
     const { body } = note // keeping track of body, as-is
 
@@ -77,20 +79,7 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
   const [saving, setSaving] = useState(false)
 
   if (loading) {
-    const labels = {
-      OPENING_BOX: "Opening profile",
-      OPENING_SPACE: "Opening space",
-      OPENING_THREAD: "Opening thread",
-    }
-
-    return (
-      <LoadingState loadingState={loadingState} labels={labels}>
-        <p>
-          Locked.fyi is a new kind of platform, which only uses decentralized
-          storage for your data. It takes a few seconds to load!
-        </p>
-      </LoadingState>
-    )
+    return <Loading />
   }
 
   const onSave = async (event) => {
@@ -121,11 +110,10 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
   }
 
   const isDraft = note.attributes.draft
-
   return (
     <form className="container" onSubmit={onSave}>
       <LockPicker
-        identity={identity}
+        identity={account}
         onLockChange={onLockChange}
         currentLocks={note.attributes.locks}
       >
@@ -182,7 +170,7 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
         {note.attributes.id && note.attributes.id > 0 && (
           <>
             ➡{" "}
-            <Link to={notePath(identity, noteThread, note.attributes.id)}>
+            <Link to={notePath(account, noteThread, note.attributes.id)}>
               {note.attributes.title}
             </Link>
           </>
@@ -193,7 +181,6 @@ const Editor = ({ identity, thread: threadId, note: noteId }) => {
 }
 
 Editor.propTypes = {
-  identity: PropTypes.string.isRequired,
   thread: PropTypes.string,
   note: PropTypes.string,
 }

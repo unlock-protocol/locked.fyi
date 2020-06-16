@@ -1,15 +1,15 @@
-import React from "react"
+import React, { useContext } from "react"
 import PropTypes from "prop-types"
-import { useWeb3React } from "@web3-react/core"
 import Editor from "./Editor"
+import BoxContext from "../contexts/boxContext"
 
 const Write = ({ note, thread }) => {
-  const { account } = useWeb3React()
-  if (!account) {
+  const { box } = useContext(BoxContext)
+  if (!box) {
     return <>Please authenticate first</>
   }
 
-  return <Editor identity={account} note={note} thread={thread} />
+  return <Editor note={note} thread={thread} />
 }
 
 Write.propTypes = {

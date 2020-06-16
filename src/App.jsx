@@ -107,11 +107,12 @@ function getLibrary(provider) {
 
 function App() {
   const [box, setBox] = useState(null)
+  const [space, setSpace] = useState(null)
 
   return (
     <Router basename={process.env.BASE_PATH}>
       <Web3ReactProvider getLibrary={getLibrary}>
-        <BoxContent.Provider value={{ setBox, box }}>
+        <BoxContent.Provider value={{ setBox, box, space, setSpace }}>
           <Layout>
             <Routes />
           </Layout>
