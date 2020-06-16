@@ -6,8 +6,6 @@ import { sortThread } from "./sortThread"
  * States
  */
 const states = {
-  OPENING_BOX: "OPENING_BOX",
-  OPENING_SPACE: "OPENING_SPACE",
   OPENING_THREAD: "OPENING_THREAD",
   RETRIEVING_ITEM: "RETRIEVING_ITEM",
   SAVING_NEW_ITEM: "SAVING_NEW_ITEM",
@@ -196,16 +194,9 @@ const LoadNote = (space) => {
     noteId,
     stateCallback = () => {}
   ) => {
-    // TODO: support existing IPFS node?
-    // https://docs.3box.io/api/auth#box-openbox-address-ethereumprovider-opts
-    stateCallback(null, states.OPENING_BOX)
-
     let thread
     let item
     let itemThread
-
-    // First, open the space.
-    stateCallback(null, states.OPENING_SPACE)
 
     // If there is a threadId and a noteId, we need to open that one
     if (threadId && noteId) {
