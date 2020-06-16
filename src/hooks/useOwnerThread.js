@@ -75,6 +75,7 @@ export const useOwnerThread = (identity, threadId, noteId) => {
     }
 
     openNote()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [identity, threadId, noteId])
 
   /**
