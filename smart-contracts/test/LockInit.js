@@ -10,6 +10,7 @@ const UnlockABI = UnlockJSON.abi
 const LockABI = LockJSON.abi
 const UnlockBytecode = UnlockJSON.bytecode
 const LockBytecode = LockJSON.bytecode
+const DAI_ADDRESS = '0x6b175474e89094c44da98b954eedeac495271d0f'
 
 describe('Lock Setup', () => {
   before(async () => {
@@ -46,13 +47,13 @@ describe('Lock Setup', () => {
     })
     await tx.wait()
     let publicLockAddress = await unlock.publicLockAddress()
-    console.log(`Lock-Template Address: ${publicLockAddress}`)
+    console.log(`template address: ${publicLockAddress}`)
     console.log(`Symbol: ${await unlock.globalTokenSymbol()}`)
-
+    // console.log(`is signer: ${isSigner(wallet)}`)
     // deploy a lock to mimic the real locked.fyi lock:
-    tx = await unlock.connect(lockCreator).createLock(
+    tx = await unlock.createLock(
       BigNumber.from(60 * 60 * 24 * 365), // 1 year
-      '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI  Contract Address
+      DAI_ADDRESS, // DAI  Contract Address
       BigNumber.from('100000000000000000'), // 0.1 DAI  (0.1 / 10 ** 18)
       constants.MaxUint256, // Number of Keys
       'CloneOfLocked.fyi', // Name
@@ -61,6 +62,8 @@ describe('Lock Setup', () => {
     console.log(`We're here now...`)
     receipt = await tx.wait()
     console.log(receipt.events)
+    // register the hook contract.
+    // set this lock creator up as a fixture or simple module to import.
   })
 
   it('Deployed a lock', async () => {

@@ -42,7 +42,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   // The 64.64-bit representation of 3.321
   // (61261637068789420000 / 2^64 = 3.321)
   // The bonding curve we use here is P=log2(S)/3.321,
-  // which aproximates a base-10 logarithm closely.
+  // which aproximates a base-10 logarithm.
   int128 private constant CURVE_MODIFER = 61261637068789420000;
 
   // 2^64, as used by ABDKMath64x64.sol
