@@ -6,6 +6,8 @@
   "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts": "^3.0.2",
+    "@openzeppelin/contracts-ethereum-package": "2.5.0",
+    "@openzeppelin/upgrades": "2.8.0",
     "@unlock-protocol/unlock-abi-7": "^1.0.3",
     "abdk-libraries-solidity": "^2.2.0"
   },
