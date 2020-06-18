@@ -16,6 +16,14 @@ import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
+  //  ██████╗██████╗ ███████╗██████╗ ██╗████████╗     █████╗ ██████╗ ██████╗ ██╗  ██╗    ██╗
+  // ██╔════╝██╔══██╗██╔════╝██╔══██╗██║╚══██╔══╝    ██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝    ██║
+  // ██║     ██████╔╝█████╗  ██║  ██║██║   ██║       ███████║██████╔╝██║  ██║█████╔╝     ██║
+  // ██║     ██╔══██╗██╔══╝  ██║  ██║██║   ██║       ██╔══██║██╔══██╗██║  ██║██╔═██╗     ╚═╝
+  // ╚██████╗██║  ██║███████╗██████╔╝██║   ██║       ██║  ██║██████╔╝██████╔╝██║  ██╗    ██╗
+  //  ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝   ╚═╝       ╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝
+  //
+
   // ////////////////////  Libs  ///////////////////////////
 
   using ABDKMath64x64 for int128;
@@ -75,10 +83,11 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   ) external view
     returns (uint minKeyPrice)
   {
-    // get the price for the lock before purchase ic completed.
     int128 supply = tokenSupply.fromUInt();
-    int128 tokenPrice = supply.log_2().div(CURVE_MODIFER);
-    uint256 minKeyPrice = tokenPrice.toUInt();
+    int128 logTokenPrice = supply.log_2();
+    int128 modifiedTokenPrice = logTokenPrice.div(CURVE_MODIFER).div(DENOMINATOR);
+    // need to sort out units !!!
+    uint256 minKeyPrice = modifiedTokenPrice.toUInt();
     return minKeyPrice;
   }
 
