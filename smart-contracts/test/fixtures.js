@@ -92,6 +92,5 @@ exports.deployLock = async () => {
   const newLockAddress = receipt.events[0].args.newLockAddress
   console.log(`New Lock deployed at: ${newLockAddress}`)
   const lockedFyiLock = await ethers.getContractAt(LockABI, newLockAddress)
-  console.log('Here-100')
   return [lockedFyiLock, tokenAddress]
 }

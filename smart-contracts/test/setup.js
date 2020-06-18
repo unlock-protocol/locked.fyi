@@ -25,11 +25,8 @@ describe('Lock Setup', () => {
     tokenAddress = results[1]
 
     // Get the deployed hook:
-    console.log(`9283749823: ${hookAddress}`)
     if (hookAddress === undefined) {
-      console.log('howdy')
       let hook = await deployHook()
-      console.log('NIck')
       deployedHookAddress = hookAddress
     } else {
       hook = await ethers.getContractAt(hookABI, hookAddress)
