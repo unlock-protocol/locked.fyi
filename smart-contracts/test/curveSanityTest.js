@@ -22,14 +22,14 @@ function fixedPointToDecimal(int128Numerator) {
 describe('BondingCurveHook', () => {
   before(async () => {
     if (hookAddress === undefined) {
-      let hook = await deployHook()
-      deployedHookAddress = hook.address
+      hook = await deployHook()
+      // deployedHookAddress = hook.address
     } else {
       hook = await ethers.getContractAt(hookABI, hookAddress)
     }
   })
 
-  it.skip('Should return the correct price', async () => {
+  it('Should return the correct price', async () => {
     const [wallet, address1, address2] = await ethers.getSigners()
     const data = ['0x00']
     const tx = await hook.keyPurchasePrice(

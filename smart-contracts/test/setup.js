@@ -26,13 +26,10 @@ describe('Lock Setup', () => {
 
     // Get the deployed hook:
     if (hookAddress === undefined) {
-      let hook = await deployHook()
-      deployedHookAddress = hookAddress
+      purchaseHook = await deployHook()
     } else {
-      hook = await ethers.getContractAt(hookABI, hookAddress)
+      purchaseHook = await ethers.getContractAt(hookABI, hookAddress)
     }
-
-    purchaseHook = await deployHook()
 
     // Ensure we're using the correct signer:
     let walletAddress = await wallet.getAddress()
