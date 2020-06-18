@@ -35,7 +35,8 @@ exports.deployHook = async () => {
     HookBytecode,
     wallet
   )
-  hook = await BondingCurveHook.deploy()
+  // set initial supply > 0 !
+  hook = await BondingCurveHook.deploy(1000000000)
   await hook.deployed()
   console.log(`Hook deployed at: ${hook.address}`)
   hook_Address = hook.address

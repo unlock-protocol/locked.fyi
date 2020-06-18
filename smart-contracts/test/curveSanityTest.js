@@ -30,23 +30,23 @@ describe('BondingCurveHook', () => {
   })
 
   it('Should return the correct price', async () => {
-    const [wallet, address1, address2] = await ethers.getSigners()
-    const data = ['0x00']
-    const tx = await hook.keyPurchasePrice(
+    const [wallet, addr1, addr2, author] = await ethers.getSigners()
+    const address1 = await addr1.getAddress()
+    const address2 = await addr2.getAddress()
+    const authorAddress = await author.getAddress()
+    const data = utils.hexlify(authorAddress)
+    const supply = await hook.tokenSupply()
+    const priceNumerator = await hook.keyPurchasePrice(
       address1,
       address1,
-      constants.ZeroAddress,
+      address1,
       data
     )
-    const receipt = await tx.wait()
-    console.log(`Supply: ${receipt.events[0].args._supply.toString()}`)
-    console.log(`Price: ${receipt.events[1].args._price.toString()}`)
-    const numerator = await hook.tokenPrice.call()
-    const price = fixedPointToDecimal(numerator)
+    console.log(`priceNumerator: ${priceNumerator.toString()}`)
+    const price = fixedPointToDecimal(priceNumerator)
     const calculatedPrice = jsPriceCalculator(supply)
-    console.log(`Num: ${numerator}`)
     console.log(`Denom: ${DENOMINATOR}`)
-    console.log(`Price: ${price}`)
+    console.log(`Price: ${price.toString()}`)
     assert.equal(price, calculatedPrice)
   })
 })

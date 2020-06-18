@@ -25,7 +25,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   // ////////////////////  Data  ///////////////////////////
 
   // The number of keys sold using this hook.
-  int128 public tokenSupply;
+  uint256 public tokenSupply;
 
   // mainnet address for deploy locked.fyi lock
   address private constant LOCK_ADDRESS = 0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3;
@@ -51,6 +51,10 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   // ////////////////////  Functions  ///////////////////////////
 
+  constructor(uint _initialSupply) public {
+    tokenSupply = _initialSupply;
+  }
+
 /**
    * @notice Used to determine the purchase price before issueing a transaction.
    * This allows the hook to offer a discount on purchases.
@@ -72,9 +76,10 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     returns (uint minKeyPrice)
   {
     // get the price for the lock before purchase ic completed.
-    int128 tokenPrice = tokenSupply.log_2().div(CURVE_MODIFER);
-    // emit KeyPrice(tokenPrice, tokenSupply);
-    return tokenPrice.toUInt();
+    int128 supply = tokenSupply.fromUInt();
+    int128 tokenPrice = supply.log_2().div(CURVE_MODIFER);
+    uint256 minKeyPrice = tokenPrice.toUInt();
+    return minKeyPrice;
   }
 
   /**
