@@ -1,5 +1,5 @@
 const { ethers } = require('@nomiclabs/buidler')
-const { BigNumber, constants } = require('ethers')
+const { BigNumber, constants, utils } = require('ethers')
 const {
   deployLock,
   deployHook,
@@ -35,12 +35,13 @@ describe('Lock Setup', () => {
     let walletAddress = await wallet.getAddress()
     assert.isOk(await lockedFyiLock.isLockManager(walletAddress))
 
-    // Register the purchase hook:
-    // const receipt = await lockedFyiLock.setEventHooks(
-    //   constants.ZeroAddress,
-    //   purchaseHook.address
-    // )
-    // await receipt.wait()
+    //Register the purchase hook:
+    const receipt = await lockedFyiLock.setEventHooks(
+      purchaseHook.address,
+      utils.getAddress('0x0000000000000000000000000000000000000000') //constants.ZeroAddress,
+    )
+    const returnedHookAddress = await lockedFyiLock.onKeyPurchaseHook()
+    assert.equal(returnedHookAddress, purchaseHook.address)
 
     // Set the beneficiary to the Locked-FYI-DAO address:
     // await lockedFyiLock.updateBeneficiary()
