@@ -3,14 +3,19 @@ const { BigNumber, constants } = require('ethers')
 const { assert } = require('chai')
 const UnlockJSON = require('@unlock-protocol/unlock-abi-7/Unlock.json')
 const LockJSON = require('@unlock-protocol/unlock-abi-7/PublicLock.json')
+const HookJSON = require('../artifacts/BondingCurveHook.json')
 
+const HookABI = HookJSON.abi
 const UnlockABI = UnlockJSON.abi
 const LockABI = LockJSON.abi
 const UnlockBytecode = UnlockJSON.bytecode
 const LockBytecode = LockJSON.bytecode
+const HookBytecode = HookJSON.bytecode
 const provider = ethers.provider
 
-async function deployToken() {
+let hook_Address
+
+exports.deployToken = async () => {
   const [wallet] = await ethers.getSigners()
   const Token = await ethers.getContractFactory('TestToken', wallet)
   const token = await Token.deploy()
@@ -23,16 +28,22 @@ async function deployToken() {
   return token.address
 }
 
-async function deployHook() {
+exports.deployHook = async () => {
   const [wallet] = await ethers.getSigners()
-  const BondingCurveHook = await ethers.getContractFactory('BondingCurveHook')
+  const BondingCurveHook = await ethers.getContractFactory(
+    HookABI,
+    HookBytecode,
+    wallet
+  )
   hook = await BondingCurveHook.deploy()
   await hook.deployed()
   console.log(`Hook deployed at: ${hook.address}`)
+  hook_Address = hook.address
   return hook
 }
+exports.hookAddress = hook_Address
 
-async function deployLock() {
+exports.deployLock = async () => {
   const [wallet, lockCreator] = await ethers.getSigners()
 
   // deploy a Lock and get the address:
@@ -66,7 +77,7 @@ async function deployLock() {
   console.log(`Unlock deployed at: ${unlock.address}`)
 
   // get the deployed address for the test token
-  const tokenAddress = await deployToken()
+  const tokenAddress = await this.deployToken()
 
   // deploy a lock to mimic the real locked.fyi lock:
   tx = await unlock.createLock(
@@ -81,11 +92,6 @@ async function deployLock() {
   const newLockAddress = receipt.events[0].args.newLockAddress
   console.log(`New Lock deployed at: ${newLockAddress}`)
   const lockedFyiLock = await ethers.getContractAt(LockABI, newLockAddress)
+  console.log('Here-100')
   return [lockedFyiLock, tokenAddress]
-}
-
-module.exports = {
-  deployLock,
-  deployHook,
-  deployToken,
 }

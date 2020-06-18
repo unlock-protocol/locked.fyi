@@ -1,12 +1,20 @@
 const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants } = require('ethers')
-const { deployLock, deployHook, deployToken } = require('./fixtures.js')
+const {
+  deployLock,
+  deployHook,
+  hookAddress,
+  deployToken,
+} = require('./fixtures.js')
+const hookJSON = require('../artifacts/BondingCurveHook.json')
+const hookABI = hookJSON.abi
 const { assert } = require('chai')
 const provider = ethers.provider
 
 let lockedFyiLock
 let purchaseHook
 let tokenAddress
+let deployedHookAddress
 
 describe('Lock Setup', () => {
   before(async () => {
@@ -15,7 +23,18 @@ describe('Lock Setup', () => {
     const results = await deployLock()
     lockedFyiLock = results[0]
     tokenAddress = results[1]
+
     // Get the deployed hook:
+    console.log(`9283749823: ${hookAddress}`)
+    if (hookAddress === undefined) {
+      console.log('howdy')
+      let hook = await deployHook()
+      console.log('NIck')
+      deployedHookAddress = hookAddress
+    } else {
+      hook = await ethers.getContractAt(hookABI, hookAddress)
+    }
+
     purchaseHook = await deployHook()
 
     // Ensure we're using the correct signer:
