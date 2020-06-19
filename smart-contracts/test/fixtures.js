@@ -28,7 +28,7 @@ exports.deployToken = async () => {
   return token.address
 }
 
-exports.deployHook = async () => {
+exports.deployHook = async (_lockAddress) => {
   const [wallet] = await ethers.getSigners()
   const BondingCurveHook = await ethers.getContractFactory(
     HookABI,
@@ -36,7 +36,7 @@ exports.deployHook = async () => {
     wallet
   )
   // set initial supply > 0 !
-  hook = await BondingCurveHook.deploy(1000000000)
+  hook = await BondingCurveHook.deploy(1000000000, _lockAddress)
   await hook.deployed()
   console.log(`Hook deployed at: ${hook.address}`)
   hook_Address = hook.address

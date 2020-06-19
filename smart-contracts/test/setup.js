@@ -10,7 +10,22 @@ const hookJSON = require('../artifacts/BondingCurveHook.json')
 const hookABI = hookJSON.abi
 const { assert } = require('chai')
 const provider = ethers.provider
+const DENOMINATOR = Math.pow(2, 64)
+const CURVE_MODIFIER = 3.321
+const ZERO_ADDRESS = utils.getAddress(
+  '0x0000000000000000000000000000000000000000'
+)
+let walletAddress
 
+function jsPriceCalculator(s) {
+  return Math.log2(s) / CURVE_MODIFIER
+}
+
+function fixedPointToDecimal(int128Numerator) {
+  return int128Numerator / DENOMINATOR
+}
+
+let hook
 let lockedFyiLock
 let purchaseHook
 let tokenAddress
@@ -26,19 +41,19 @@ describe('Lock Setup', () => {
 
     // Get the deployed hook:
     if (hookAddress === undefined) {
-      purchaseHook = await deployHook()
+      purchaseHook = await deployHook(lockedFyiLock.address)
     } else {
       purchaseHook = await ethers.getContractAt(hookABI, hookAddress)
     }
 
     // Ensure we're using the correct signer:
-    let walletAddress = await wallet.getAddress()
+    walletAddress = await wallet.getAddress()
     assert.isOk(await lockedFyiLock.isLockManager(walletAddress))
 
     //Register the purchase hook:
     const receipt = await lockedFyiLock.setEventHooks(
       purchaseHook.address,
-      utils.getAddress('0x0000000000000000000000000000000000000000') //constants.ZeroAddress,
+      ZERO_ADDRESS //constants.ZeroAddress,
     )
     const returnedHookAddress = await lockedFyiLock.onKeyPurchaseHook()
     assert.equal(returnedHookAddress, purchaseHook.address)
@@ -62,6 +77,49 @@ describe('Lock Setup', () => {
     assert(keyPrice.eq(BigNumber.from('100000000000000000')))
     assert(numberOfKeys.eq(constants.MaxUint256))
     assert.equal(name, 'Locked-fyi')
-    // assert.equal(beneficiary, <DAO Address Here>)
+    // Beneficiary will eventually be the DAO address
+    // assert.equal(beneficiary, DAO_ADDRESS)
+    assert.equal(beneficiary, walletAddress)
+  })
+
+  describe('Calling the hook', () => {
+    it.skip('Should buy a key', async () => {
+      const [wallet, addr1, addr2, author] = await ethers.getSigners()
+      const address1 = await addr1.getAddress()
+      const address2 = await addr2.getAddress()
+      const authorAddress = await author.getAddress()
+      const data = utils.hexlify(authorAddress)
+      await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
+
+      console.log(`priceNumerator: ${priceNumerator.toString()}`)
+      const price = fixedPointToDecimal(priceNumerator)
+      const calculatedPrice = jsPriceCalculator(supply)
+      console.log(`Denom: ${DENOMINATOR}`)
+      console.log(`Price: ${price.toString()}`)
+      assert.equal(price, calculatedPrice)
+    })
+
+    it.skip('Should return the correct price', async () => {
+      const [wallet, addr1, addr2, author] = await ethers.getSigners()
+      const address1 = await addr1.getAddress()
+      const address2 = await addr2.getAddress()
+      const authorAddress = await author.getAddress()
+      const data = utils.hexlify(authorAddress)
+      const supply = await purchaseHook.tokenSupply()
+      const priceNumerator = await purchaseHook.onKeyPurchase(
+        address1,
+        address1,
+        address1,
+        data,
+        42,
+        42
+      )
+      console.log(`priceNumerator: ${priceNumerator.toString()}`)
+      const price = fixedPointToDecimal(priceNumerator)
+      const calculatedPrice = jsPriceCalculator(supply)
+      console.log(`Denom: ${DENOMINATOR}`)
+      console.log(`Price: ${price.toString()}`)
+      assert.equal(price, calculatedPrice)
+    })
   })
 })
