@@ -10,6 +10,7 @@ pragma solidity ^0.5.17;
  */
 
 import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
+import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 // import '@openzeppelin/contracts/math/SafeMath.sol';
 // import '@nomiclabs/buidler/console.sol';
@@ -38,6 +39,9 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   // mainnet address for deploy locked.fyi lock
   address private constant LOCK_ADDRESS = 0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3;
 
+  //@audit for testing only. deploy a mock hook for this
+  address private _testLockAddress;
+
   /**
   * 64.64-bit representation of 3.321:
   * The curve function used is P=log2(S) / 3.321,
@@ -59,8 +63,11 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   // ////////////////////  Functions  ///////////////////////////
 
-  constructor(uint _initialSupply) public {
+  constructor(uint _initialSupply, address _testLock) public {
+    // needed to set supply > 0 (ABDK lib fails otherwise)
     tokenSupply = _initialSupply;
+    // @audit testing only, move to mock and remove arg from constructor!
+    _testLockAddress = _testLock;
   }
 
 /**
@@ -76,19 +83,14 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
    * the lock's `purchasePriceFor` function
    */
   function keyPurchasePrice(
-    address, //from,
-    address, //recipient,
-    address, //referrer,
-    bytes calldata //data
+    address from,
+    address recipient,
+    address referrer,
+    bytes calldata data
   ) external view
     returns (uint minKeyPrice)
   {
-    int128 supply = tokenSupply.fromUInt();
-    int128 logTokenPrice = supply.log_2();
-    int128 modifiedTokenPrice = logTokenPrice.div(CURVE_MODIFER).div(DENOMINATOR);
-    // need to sort out units !!!
-    uint256 minKeyPrice = modifiedTokenPrice.toUInt();
-    return minKeyPrice;
+    // Not needed for this use-case.
   }
 
   /**
@@ -112,14 +114,25 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     uint pricePaid
   ) external
   {
-    // Ensure caller is the locked.fyi lock !
+    // Ensure caller is the locked.fyi lock
     require(msg.sender == LOCK_ADDRESS);
-
+    IPublicLockV7 lock = IPublicLockV7(msg.sender);
+    // @audit sort out units
+    int128 supply = tokenSupply.fromUInt();
+    int128 logTokenPrice = supply.log_2();
+    int128 modifiedTokenPrice = logTokenPrice.div(CURVE_MODIFER).div(DENOMINATOR);
+    uint256 keyPrice = modifiedTokenPrice.toUInt();
     // update current supply using internal counter
     tokenSupply++;
-    // pull author address from calldata
-    address author;
-    // author = data[];
+
+    // Read token address from lock and pass as 2nd arg:
+    address tokenAddress = lock.tokenAddress();
+    lock.updateKeyPricing(keyPrice, tokenAddress);
+
+    // get author's address from calldata:
+    // address author = address(data[0]);
+
     // inform DAO to mint new share for author
+    // DAO.mint(Author, 1);
   }
 }
