@@ -1,14 +1,15 @@
 const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants, utils } = require('ethers')
+const { assert } = require('chai')
+const hookJSON = require('../artifacts/BondingCurveHook.json')
 const {
   deployLock,
   deployHook,
   hookAddress,
   deployToken,
 } = require('./setup.js')
-const hookJSON = require('../artifacts/BondingCurveHook.json')
+
 const hookABI = hookJSON.abi
-const { assert } = require('chai')
 const provider = ethers.provider
 const DENOMINATOR = Math.pow(2, 64)
 const CURVE_MODIFIER = 3.321
