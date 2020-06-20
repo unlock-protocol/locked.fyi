@@ -1,4 +1,5 @@
-usePlugin('@nomiclabs/buidler-waffle')
+require('dotenv').config()
+usePlugin('buidler-ethers-v5')
 usePlugin('solidity-coverage')
 
 module.exports = {
