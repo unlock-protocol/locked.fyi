@@ -5,7 +5,7 @@ const {
   deployHook,
   hookAddress,
   deployToken,
-} = require('./fixtures.js')
+} = require('./setup.js')
 const hookJSON = require('../artifacts/BondingCurveHook.json')
 const hookABI = hookJSON.abi
 const { assert } = require('chai')
