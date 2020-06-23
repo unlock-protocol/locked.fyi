@@ -176,7 +176,21 @@ describe('Lock Setup', () => {
       assert(priceAfter.gt(priceBefore))
     })
 
+    it('should increment the supply counter after a purchase', async () => {
+      const [wallet, addr1, author] = await ethers.getSigners()
+      const address1 = await addr1.getAddress()
+      const authorAddress = await author.getAddress()
+      const data = utils.hexlify(authorAddress)
+      const supplyBefore = await purchaseHook.tokenSupply()
+      const tx = await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
+      await tx.wait()
+      const supplyAfter = await purchaseHook.tokenSupply()
+      assert(supplyAfter.eq(supplyBefore.add(1)))
+    })
+
     it.skip('The price should increase predictably', async () => {})
-    it.skip('should increment the supply counter after a purchase', async () => {})
+
+    it.skip('Should fail if anyone but the hook trys to change the price', async () => {})
+    it.skip('Should fail if...', async () => {})
   })
 })
