@@ -13,18 +13,10 @@ import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 // import '@openzeppelin/contracts/math/SafeMath.sol';
-// import '@nomiclabs/buidler/console.sol';
+import '@nomiclabs/buidler/console.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
-
-  //  ██████╗██████╗ ███████╗██████╗ ██╗████████╗     █████╗ ██████╗ ██████╗ ██╗  ██╗    ██╗
-  // ██╔════╝██╔══██╗██╔════╝██╔══██╗██║╚══██╔══╝    ██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝    ██║
-  // ██║     ██████╔╝█████╗  ██║  ██║██║   ██║       ███████║██████╔╝██║  ██║█████╔╝     ██║
-  // ██║     ██╔══██╗██╔══╝  ██║  ██║██║   ██║       ██╔══██║██╔══██╗██║  ██║██╔═██╗     ╚═╝
-  // ╚██████╗██║  ██║███████╗██████╔╝██║   ██║       ██║  ██║██████╔╝██████╔╝██║  ██╗    ██╗
-  //  ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝   ╚═╝       ╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝
-  //
-
+  // @audit add credit for ABDK LIB !!!
   // ////////////////////  Libs  ///////////////////////////
 
   using ABDKMath64x64 for int128;
@@ -50,11 +42,11 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   * Details on how the fixed-point numbers work here:
   * https://github.com/abdk-consulting/abdk-libraries-solidity/blob/939f0a264f2d07a9e2c7a3a020f0db2c0885dc01/ABDKMath64x64.sol#L8
    */
-  int128 private constant CURVE_MODIFER = 61261637068789420000;
+  int128 private constant CURVE_MODIFER = 61278757397652720000;
 
   //@audit Still needed ???
   // 2^64, as used by ABDKMath64x64.sol
-  int128 private constant DENOMINATOR = 18446744073709552000;
+  uint256 private constant DENOMINATOR = 18446744073709552000;
 
   // ////////////////////  Events  ///////////////////////////
 
@@ -71,16 +63,48 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   }
 
   function getPrice()
-    external
+    public
     view
-    returns (int128)
+    returns (uint256)
   {
+    // fromInt() int256 => int128
+    // toInt() int128 => int64
+    // fromUInt() uint256 => int128
+    // toUInt() int128 => uint64
+
+    // mul() int128,int128 => int128
+    // div() int128,int128 => int128
+
+    // muli () int128,int256 => int256
+    // divi() int256,int256 => int128
+
+    // mulu() int128,uint256 => uint256
+    // divu() uint256,uint256 => int128
+
+    // divuu() uint256,uint256 => uint128
+
+    // log_2() int128 => int128
+
+    // int128 keyPrice
+    // int128 CURVE_MODIFER
+
     int128 supply = tokenSupply.fromUInt();
-    int128 keyPrice = supply.log_2().div(CURVE_MODIFER);
-    // int128 modifiedTokenPrice = logTokenPrice;
-    // int128 modifiedTokenPrice = logTokenPrice.div(CURVE_MODIFER);
-    // uint256 keyPrice = modifiedTokenPrice.toUInt();
-    return keyPrice;
+
+    int128 keyPriceNumerator = supply.log_2().div(CURVE_MODIFER);
+
+    uint256 keyPriceAsUint = uint256(keyPriceNumerator);
+
+    // console.log('keypriceAsUint', (keyPriceAsUint / (DENOMINATOR / 10**18)));
+
+    // int128 supply = tokenSupply.fromUInt();
+    // int128 keyPrice = supply.log_2();
+
+    // uint256 keyPriceAsUint = uint256(keyPrice);
+    // int128 modifiedKeyPrice = keyPriceAsUint.divu(CURVE_MODIFER).divu(DENOMINATOR);
+    // uint256 modifiedKeyPriceAsUint = uint256(modifiedKeyPrice);
+    // console.log('modifiedKeyPriceAsUint', modifiedKeyPriceAsUint);
+
+    return (keyPriceAsUint);
   }
 
 /**
@@ -128,19 +152,20 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   ) external
   {
     // Ensure caller is the locked.fyi lock
-    require(msg.sender == LOCK_ADDRESS);
+    // @audit re-enable check before deployment !!!
+    // require(msg.sender == LOCK_ADDRESS);
+    require(msg.sender == _testLockAddress);
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     // @audit sort out units
-    int128 supply = tokenSupply.fromUInt();
-    int128 logTokenPrice = supply.log_2();
-    int128 modifiedTokenPrice = logTokenPrice.div(CURVE_MODIFER).div(DENOMINATOR);
-    uint256 keyPrice = modifiedTokenPrice.toUInt();
-    // update current supply using internal counter
+    // @audit toUInt() rounds down and is underflow-protected. uint() is not!
+    uint keyPrice = getPrice();
+
     tokenSupply++;
 
     // Read token address from lock and pass as 2nd arg:
     address tokenAddress = lock.tokenAddress();
     lock.updateKeyPricing(keyPrice, tokenAddress);
+    // lock.updateKeyPricing(keyPrice * 10**18, tokenAddress);
 
     // get author's address from calldata:
     // address author = address(data[0]);

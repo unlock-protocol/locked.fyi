@@ -2,6 +2,7 @@ const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants, utils } = require('ethers')
 const { assert } = require('chai')
 const hookJSON = require('../artifacts/BondingCurveHook.json')
+const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers')
 const {
   deployLock,
   deployHook,
@@ -12,7 +13,8 @@ const {
 const hookABI = hookJSON.abi
 const provider = ethers.provider
 const DENOMINATOR = Math.pow(2, 64)
-const CURVE_MODIFIER = 3.321
+const CURVE_MODIFIER = 3.321928094887362
+// const CURVE_MODIFIER = 3.321
 const ZERO_ADDRESS = utils.getAddress(
   '0x0000000000000000000000000000000000000000'
 )
@@ -25,6 +27,16 @@ function jsPriceCalculator(s) {
 function fixedPointToDecimal(int128Numerator) {
   return int128Numerator / DENOMINATOR
 }
+
+// async function findEvents(contract, event, blockHash) {
+//   const filter = contract.filters[event]()
+//   const events = await contract.queryFilter(filter, blockHash)
+//   return events
+// }
+
+// async function waitFor(p) {
+//   p.then((tx) => tx.wait())
+// }
 
 let hook
 let lockedFyiLock
@@ -58,6 +70,9 @@ describe('Lock Setup', () => {
     )
     const returnedHookAddress = await lockedFyiLock.onKeyPurchaseHook()
     assert.equal(returnedHookAddress, purchaseHook.address)
+    // Make hook a Lock Manager
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    assert.isOk(await lockedFyiLock.isLockManager(purchaseHook.address))
 
     // Set the beneficiary to the Locked-FYI-DAO address:
     // await lockedFyiLock.updateBeneficiary()
@@ -92,28 +107,68 @@ describe('Lock Setup', () => {
 
       console.log(`supply: ${supply}`)
       console.log(`priceNumerator: ${priceNumerator.toString()}`)
-      console.log(`Denominator (2^64): ${DENOMINATOR}`)
       console.log(`returnedPrice: ${returnedPrice.toString()}`)
 
-      assert.equal(returnedPrice, calculatedPrice)
+      assert.closeTo(
+        returnedPrice,
+        calculatedPrice,
+        0.0000000000000006,
+        'numbers are not close enough'
+      )
     })
   })
 
   describe('Purchasing keys from the lock', () => {
-    it.skip('Should buy a key', async () => {
+    it('Should buy a key', async () => {
       const [wallet, addr1, addr2, author] = await ethers.getSigners()
       const address1 = await addr1.getAddress()
       const address2 = await addr2.getAddress()
       const authorAddress = await author.getAddress()
       const data = utils.hexlify(authorAddress)
-      await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
+      const priceBefore = await lockedFyiLock.keyPrice()
+      console.log(`Original Lock Price from Lock: ${priceBefore}`)
+      const supply1 = await purchaseHook.tokenSupply()
+      const supply2 = await purchaseHook.tokenSupply()
+      console.log(`supply2: ${supply2}`)
+      const receipt = await lockedFyiLock.purchase(
+        0,
+        address1,
+        ZERO_ADDRESS,
+        data
+      )
 
-      console.log(`priceNumerator: ${priceNumerator.toString()}`)
-      const price = fixedPointToDecimal(priceNumerator)
-      const calculatedPrice = jsPriceCalculator(supply)
-      console.log(`Denom: ${DENOMINATOR}`)
-      console.log(`Price: ${price.toString()}`)
-      assert.equal(price, calculatedPrice)
+      await receipt.wait(1)
+      const supply3 = await purchaseHook.tokenSupply()
+      console.log(`supply3: ${supply3}`)
+      const hasKey = await lockedFyiLock.getHasValidKey(address1)
+      assert.isOk(hasKey)
+      const price3 = await lockedFyiLock.keyPrice()
+      const receipt2 = await lockedFyiLock.purchase(
+        0,
+        address2,
+        ZERO_ADDRESS,
+        data
+      )
+      const price4 = await lockedFyiLock.keyPrice()
+      const supply4 = await purchaseHook.tokenSupply()
+      console.log(`supply4: ${supply4}`)
+      console.log(`Price 3 from Lock: ${price3}`) // 104139...
+      console.log(`Price 4 from Lock: ${price4}`) // 107918...
     })
+
+    it('should increase the price after a purchase', async () => {
+      const [wallet, addr1, author] = await ethers.getSigners()
+      const address1 = await addr1.getAddress()
+      const authorAddress = await author.getAddress()
+      const data = utils.hexlify(authorAddress)
+      const priceBefore = await lockedFyiLock.keyPrice()
+      await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
+      // await receipt.wait(1)
+      const priceAfter = await lockedFyiLock.keyPrice()
+      assert(priceAfter.gt(priceBefore))
+    })
+
+    it.skip('The price should increase predictably', async () => {})
+    it.skip('should increment the supply counter after a purchase', async () => {})
   })
 })
