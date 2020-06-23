@@ -1,14 +1,15 @@
 const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants, utils } = require('ethers')
+const { assert } = require('chai')
+const hookJSON = require('../artifacts/BondingCurveHook.json')
 const {
   deployLock,
   deployHook,
   hookAddress,
   deployToken,
-} = require('./fixtures.js')
-const hookJSON = require('../artifacts/BondingCurveHook.json')
+} = require('./setup.js')
+
 const hookABI = hookJSON.abi
-const { assert } = require('chai')
 const provider = ethers.provider
 const DENOMINATOR = Math.pow(2, 64)
 const CURVE_MODIFIER = 3.321
@@ -82,7 +83,23 @@ describe('Lock Setup', () => {
     assert.equal(beneficiary, walletAddress)
   })
 
-  describe('Calling the hook', () => {
+  describe('Calling the hook directly', () => {
+    it('returns the correct price from mock function', async () => {
+      const supply = await purchaseHook.tokenSupply()
+      const priceNumerator = await purchaseHook.getPrice()
+      const returnedPrice = fixedPointToDecimal(priceNumerator)
+      const calculatedPrice = jsPriceCalculator(supply)
+
+      console.log(`supply: ${supply}`)
+      console.log(`priceNumerator: ${priceNumerator.toString()}`)
+      console.log(`Denominator (2^64): ${DENOMINATOR}`)
+      console.log(`returnedPrice: ${returnedPrice.toString()}`)
+
+      assert.equal(returnedPrice, calculatedPrice)
+    })
+  })
+
+  describe('Purchasing keys from the lock', () => {
     it.skip('Should buy a key', async () => {
       const [wallet, addr1, addr2, author] = await ethers.getSigners()
       const address1 = await addr1.getAddress()
@@ -91,29 +108,6 @@ describe('Lock Setup', () => {
       const data = utils.hexlify(authorAddress)
       await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
 
-      console.log(`priceNumerator: ${priceNumerator.toString()}`)
-      const price = fixedPointToDecimal(priceNumerator)
-      const calculatedPrice = jsPriceCalculator(supply)
-      console.log(`Denom: ${DENOMINATOR}`)
-      console.log(`Price: ${price.toString()}`)
-      assert.equal(price, calculatedPrice)
-    })
-
-    it.skip('Should return the correct price', async () => {
-      const [wallet, addr1, addr2, author] = await ethers.getSigners()
-      const address1 = await addr1.getAddress()
-      const address2 = await addr2.getAddress()
-      const authorAddress = await author.getAddress()
-      const data = utils.hexlify(authorAddress)
-      const supply = await purchaseHook.tokenSupply()
-      const priceNumerator = await purchaseHook.onKeyPurchase(
-        address1,
-        address1,
-        address1,
-        data,
-        42,
-        42
-      )
       console.log(`priceNumerator: ${priceNumerator.toString()}`)
       const price = fixedPointToDecimal(priceNumerator)
       const calculatedPrice = jsPriceCalculator(supply)
