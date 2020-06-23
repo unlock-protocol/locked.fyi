@@ -125,35 +125,43 @@ describe('Lock Setup', () => {
       const address2 = await addr2.getAddress()
       const authorAddress = await author.getAddress()
       const data = utils.hexlify(authorAddress)
+
       const priceBefore = await lockedFyiLock.keyPrice()
-      console.log(`Original Lock Price from Lock: ${priceBefore}`)
-      const supply1 = await purchaseHook.tokenSupply()
-      const supply2 = await purchaseHook.tokenSupply()
-      console.log(`supply2: ${supply2}`)
+      console.log(`Original Lock Price from Lock: ${priceBefore / 10 ** 18}`)
+
+      const initialSupply = await purchaseHook.tokenSupply()
+      console.log(`Initial Hook supply: ${initialSupply}`)
+
       const receipt = await lockedFyiLock.purchase(
         0,
         address1,
         ZERO_ADDRESS,
         data
       )
-
       await receipt.wait(1)
-      const supply3 = await purchaseHook.tokenSupply()
-      console.log(`supply3: ${supply3}`)
+
+      const supply1 = await purchaseHook.tokenSupply()
+      const priceAfter1Purchase = await lockedFyiLock.keyPrice()
+      console.log(`supply After 1 Purchase: ${supply1}`)
+      console.log(`Price After 1 Purchase: ${priceAfter1Purchase}`) // should be 1.04139...
+      // actual: p=19210304343346962330 (p / 2**64 = 1.041392685158225)
+
       const hasKey = await lockedFyiLock.getHasValidKey(address1)
       assert.isOk(hasKey)
-      const price3 = await lockedFyiLock.keyPrice()
+
       const receipt2 = await lockedFyiLock.purchase(
         0,
         address2,
         ZERO_ADDRESS,
         data
       )
-      const price4 = await lockedFyiLock.keyPrice()
-      const supply4 = await purchaseHook.tokenSupply()
-      console.log(`supply4: ${supply4}`)
-      console.log(`Price 3 from Lock: ${price3}`) // 104139...
-      console.log(`Price 4 from Lock: ${price4}`) // 107918...
+      await receipt2.wait()
+
+      const supply2 = await purchaseHook.tokenSupply()
+      const priceAfter2Purchases = await lockedFyiLock.keyPrice()
+      console.log(`supply After 2 Purchases: ${supply2}`)
+      console.log(`Price After 1 Purchase: ${priceAfter2Purchases}`) // should be 1.07918...
+      // actual: p=19907380254987510307 (p / 2**64 = 1.079181246047625)
     })
 
     it('should increase the price after a purchase', async () => {
