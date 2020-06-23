@@ -158,9 +158,9 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     // @audit sort out units
     // @audit toUInt() rounds down and is underflow-protected. uint() is not!
+    tokenSupply++;
     uint keyPrice = getPrice();
 
-    tokenSupply++;
 
     // Read token address from lock and pass as 2nd arg:
     address tokenAddress = lock.tokenAddress();
