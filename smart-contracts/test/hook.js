@@ -43,10 +43,14 @@ let lockedFyiLock
 let purchaseHook
 let tokenAddress
 let deployedHookAddress
+let signers
+let data
 
 describe('Lock Setup', () => {
   before(async () => {
-    const [wallet] = await ethers.getSigners()
+    const [wallet, addr1, addr2, author] = await ethers.getSigners()
+    const authorAddress = await author.getAddress()
+    data = utils.hexlify(authorAddress)
     // Get the deployed lock:
     const results = await deployLock()
     lockedFyiLock = results[0]
@@ -54,7 +58,7 @@ describe('Lock Setup', () => {
 
     // Get the deployed hook:
     if (hookAddress === undefined) {
-      purchaseHook = await deployHook(lockedFyiLock.address)
+      purchaseHook = await deployHook(10, lockedFyiLock.address)
     } else {
       purchaseHook = await ethers.getContractAt(hookABI, hookAddress)
     }
@@ -64,7 +68,7 @@ describe('Lock Setup', () => {
     assert.isOk(await lockedFyiLock.isLockManager(walletAddress))
 
     //Register the purchase hook:
-    const receipt = await lockedFyiLock.setEventHooks(
+    await lockedFyiLock.setEventHooks(
       purchaseHook.address,
       ZERO_ADDRESS //constants.ZeroAddress,
     )
@@ -119,7 +123,7 @@ describe('Lock Setup', () => {
   })
 
   describe('Purchasing keys from the lock', () => {
-    it('Should buy a key', async () => {
+    it('Should buy a key', async function () {
       const [wallet, addr1, addr2, author] = await ethers.getSigners()
       const address1 = await addr1.getAddress()
       const address2 = await addr2.getAddress()
@@ -164,7 +168,7 @@ describe('Lock Setup', () => {
       // actual: p=19907380254987510307 (p / 2**64 = 1.079181246047625)
     })
 
-    it('should increase the price after a purchase', async () => {
+    it('should increase the price after a purchase', async function () {
       const [wallet, addr1, author] = await ethers.getSigners()
       const address1 = await addr1.getAddress()
       const authorAddress = await author.getAddress()
@@ -176,7 +180,7 @@ describe('Lock Setup', () => {
       assert(priceAfter.gt(priceBefore))
     })
 
-    it('should increment the supply counter after a purchase', async () => {
+    it('should increment the supply counter after a purchase', async function () {
       const [wallet, addr1, author] = await ethers.getSigners()
       const address1 = await addr1.getAddress()
       const authorAddress = await author.getAddress()
@@ -188,9 +192,31 @@ describe('Lock Setup', () => {
       assert(supplyAfter.eq(supplyBefore.add(1)))
     })
 
-    it.skip('The price should increase predictably', async () => {})
+    it.skip('The price should increase predictably', async function () {})
 
-    it.skip('Should fail if anyone but the hook trys to change the price', async () => {})
-    it.skip('Should fail if...', async () => {})
+    it.only('The price for s=10 should be 1.000...', async function () {
+      const [wallet, keyPurchaser] = await ethers.getSigners()
+      const s = 9
+      purchaseHook = await deployHook(s, lockedFyiLock.address)
+      await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+      await lockedFyiLock.addLockManager(purchaseHook.address)
+      const keyPurchaserAddress = await keyPurchaser.getAddress()
+      await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+      const supply = await purchaseHook.tokenSupply()
+      assert.equal(supply, s + 1)
+      const lockPrice = await lockedFyiLock.keyPrice()
+      const calculatedPrice = jsPriceCalculator(supply)
+      console.log(`Lock Price: ${lockPrice}`)
+      console.log(`Calculated Price: ${calculatedPrice}`)
+      assert(lockPrice.eq(calculatedPrice))
+    })
+
+    it.skip('The price for s=1000 should be 3.000...', async function () {})
+
+    it.skip('The price for s=1000000 should be 6.000...', async function () {})
+
+    it.skip('The price for s=1000000000 should be 9.000...', async function () {})
+
+    it.skip('Should fail if...', async function () {})
   })
 })
