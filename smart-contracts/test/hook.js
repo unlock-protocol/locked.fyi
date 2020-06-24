@@ -194,7 +194,7 @@ describe('Lock Setup', () => {
 
     it.skip('The price should increase predictably', async function () {})
 
-    it.only('The price for s=10 should be 1.000...', async function () {
+    it.skip('The price for s=10 should be 1.000...', async function () {
       const [wallet, keyPurchaser] = await ethers.getSigners()
       const s = 9
       purchaseHook = await deployHook(s, lockedFyiLock.address)
