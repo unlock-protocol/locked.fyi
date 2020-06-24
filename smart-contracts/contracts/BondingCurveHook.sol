@@ -127,48 +127,51 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   ) external view
     returns (uint minKeyPrice)
   {
-    // Not needed for this use-case.
+    // no-op.
   }
 
   /**
    * @notice If the lock owner has registered an implementer then this hook
    * is called with every key sold.
-   * @param from the msg.sender making the purchase
-   * @param recipient the account which will be granted a key
-   * @param referrer the account which referred this key sale
+   *  from the msg.sender making the purchase
+   *  recipient the account which will be granted a key
+   *  referrer the account which referred this key sale
    * @param data arbitrary data populated by the front-end which initiated the sale
-   * @param minKeyPrice the price including any discount granted from calling this
+   *  minKeyPrice the price including any discount granted from calling this
    * hook's `keyPurchasePrice` function
-   * @param pricePaid the value/pricePaid included with the purchase transaction
+   *  pricePaid the value/pricePaid included with the purchase transaction
    * @dev the lock's address is the `msg.sender` when this function is called
    */
   function onKeyPurchase(
-    address from,
-    address recipient,
-    address referrer,
+    address /*from**/,
+    address /*recipient**/,
+    address /*referrer**/,
     bytes calldata data,
-    uint minKeyPrice,
-    uint pricePaid
+    uint /*minKeyPrice**/,
+    uint /*pricePaid**/
   ) external
   {
     // Ensure caller is the locked.fyi lock
     // @audit re-enable check before deployment !!!
-    // require(msg.sender == LOCK_ADDRESS);
+    // require(msg.sender == LOCK_ADDRESS); // 200 gas
     require(msg.sender == _testLockAddress);
-    IPublicLockV7 lock = IPublicLockV7(msg.sender);
+    IPublicLockV7 lock = IPublicLockV7(msg.sender); // 200 gas ?
     // @audit sort out units
     // @audit toUInt() rounds down and is underflow-protected. uint() is not!
-    tokenSupply++;
+    tokenSupply++; // 5000 gas
     uint keyPrice = getPrice();
 
 
     // Read token address from lock and pass as 2nd arg:
-    address tokenAddress = lock.tokenAddress();
+    address tokenAddress = lock.tokenAddress(); // read-only, no gas
     lock.updateKeyPricing(keyPrice, tokenAddress);
     // lock.updateKeyPricing(keyPrice * 10**18, tokenAddress);
 
+
     // get author's address from calldata:
-    // address author = address(data[0]);
+    // console.logBytes(msg.data);
+    (address _from, address _recipient, address _referrer, uint _start, uint _minPrice, uint _pricePaid, uint _size, bytes20 _author) = abi.decode(msg.data, (address, address, address, uint, uint, uint, uint, bytes20));
+    console.logBytes20(_author);
 
     // inform DAO to mint new share for author
     // DAO.mint(Author, 1);

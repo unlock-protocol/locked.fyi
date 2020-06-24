@@ -128,7 +128,7 @@ describe('Lock Setup', () => {
       const address1 = await addr1.getAddress()
       const address2 = await addr2.getAddress()
       const authorAddress = await author.getAddress()
-      const data = utils.hexlify(authorAddress)
+      const data = authorAddress
 
       const priceBefore = await lockedFyiLock.keyPrice()
       console.log(`Original Lock Price from Lock: ${priceBefore / 10 ** 18}`)
@@ -171,8 +171,11 @@ describe('Lock Setup', () => {
     it('should increase the price after a purchase', async function () {
       const [wallet, addr1, author] = await ethers.getSigners()
       const address1 = await addr1.getAddress()
+      const walletAddress = await wallet.getAddress()
       const authorAddress = await author.getAddress()
-      const data = utils.hexlify(authorAddress)
+      const data = authorAddress
+      console.log(`Wallet: ${walletAddress}`)
+      console.log(`address1: ${address1}`)
       const priceBefore = await lockedFyiLock.keyPrice()
       await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
       // await receipt.wait(1)
@@ -184,7 +187,8 @@ describe('Lock Setup', () => {
       const [wallet, addr1, author] = await ethers.getSigners()
       const address1 = await addr1.getAddress()
       const authorAddress = await author.getAddress()
-      const data = utils.hexlify(authorAddress)
+      const data = authorAddress
+      console.log(`Author: ${data}`)
       const supplyBefore = await purchaseHook.tokenSupply()
       const tx = await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
       await tx.wait()
