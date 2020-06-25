@@ -46,7 +46,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   //@audit Still needed ???
   // 2^64, as used by ABDKMath64x64.sol
-  uint256 private constant DENOMINATOR = 18446744073709552000;
+  int128 private constant DENOMINATOR = 18446744073709552000;
 
   // ////////////////////  Events  ///////////////////////////
 
@@ -88,11 +88,14 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     // int128 keyPrice
     // int128 CURVE_MODIFER
 
-    int128 supply = tokenSupply.fromUInt();
+    // Multiplying a token amount by a decimal number is done with mulu, with the returned value being a token amount in uint256. This covers case 1 of most financial applications.
 
-    int128 keyPriceNumerator = supply.log_2().div(CURVE_MODIFER);
+    int128 supplyInt = tokenSupply.fromUInt();
+    uint price = 1 * 10 ** 18;
 
-    uint256 keyPriceAsUint = uint256(keyPriceNumerator);
+    int128 keyPriceNumerator = supplyInt.log_2();
+    int128 modifiedNumerator = keyPriceNumerator.div(CURVE_MODIFER);
+    uint256 keyPrice = modifiedNumerator.div(DENOMINATOR).mulu(price);
 
     // console.log('keypriceAsUint', (keyPriceAsUint / (DENOMINATOR / 10**18)));
 
@@ -104,7 +107,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     // uint256 modifiedKeyPriceAsUint = uint256(modifiedKeyPrice);
     // console.log('modifiedKeyPriceAsUint', modifiedKeyPriceAsUint);
 
-    return (keyPriceAsUint);
+    return (keyPrice);
   }
 
 /**
