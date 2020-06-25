@@ -114,11 +114,8 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     tokenSupply++;
 
     // calculate the price for the new supply:
-    int128 supplyInt = tokenSupply.fromUInt();
-    uint price = 1 * 10 ** 18;
-    int128 keyPriceNumerator = supplyInt.log_2();
-    int128 modifiedNumerator = keyPriceNumerator.div(CURVE_MODIFER);
-    uint256 keyPrice = modifiedNumerator.div(DENOMINATOR).mulu(price);
+    int128 supply = tokenSupply.fromUInt();
+    uint keyPrice = supply.log_2().div(CURVE_MODIFER).div(DENOMINATOR).mulu(1 * 10 ** 18);
 
     // get current token address from lock:
     address tokenAddress = lock.tokenAddress();
