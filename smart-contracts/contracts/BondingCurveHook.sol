@@ -62,54 +62,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     _testLockAddress = _testLock;
   }
 
-  function getPrice()
-    public
-    view
-    returns (uint256)
-  {
-    // fromInt() int256 => int128
-    // toInt() int128 => int64
-    // fromUInt() uint256 => int128
-    // toUInt() int128 => uint64
-
-    // mul() int128,int128 => int128
-    // div() int128,int128 => int128
-
-    // muli () int128,int256 => int256
-    // divi() int256,int256 => int128
-
-    // mulu() int128,uint256 => uint256
-    // divu() uint256,uint256 => int128
-
-    // divuu() uint256,uint256 => uint128
-
-    // log_2() int128 => int128
-
-    // int128 keyPrice
-    // int128 CURVE_MODIFER
-
-    // Multiplying a token amount by a decimal number is done with mulu, with the returned value being a token amount in uint256. This covers case 1 of most financial applications.
-
-    int128 supplyInt = tokenSupply.fromUInt();
-    uint price = 1 * 10 ** 18;
-
-    int128 keyPriceNumerator = supplyInt.log_2();
-    int128 modifiedNumerator = keyPriceNumerator.div(CURVE_MODIFER);
-    uint256 keyPrice = modifiedNumerator.div(DENOMINATOR).mulu(price);
-
-    // console.log('keypriceAsUint', (keyPriceAsUint / (DENOMINATOR / 10**18)));
-
-    // int128 supply = tokenSupply.fromUInt();
-    // int128 keyPrice = supply.log_2();
-
-    // uint256 keyPriceAsUint = uint256(keyPrice);
-    // int128 modifiedKeyPrice = keyPriceAsUint.divu(CURVE_MODIFER).divu(DENOMINATOR);
-    // uint256 modifiedKeyPriceAsUint = uint256(modifiedKeyPrice);
-    // console.log('modifiedKeyPriceAsUint', modifiedKeyPriceAsUint);
-
-    return (keyPrice);
-  }
-
 /**
    * @notice Used to determine the purchase price before issueing a transaction.
    * This allows the hook to offer a discount on purchases.
@@ -154,13 +106,21 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     uint /*pricePaid**/
   ) external
   {
-    // Ensure caller is the locked.fyi lock
+    // Ensure caller is the locked.fyi lock:
     // @audit re-enable check before deployment !!!
-    // require(msg.sender == LOCK_ADDRESS); // 200 gas
+    // require(msg.sender == LOCK_ADDRESS);
     require(msg.sender == _testLockAddress);
+    // @audit consider this. 0x0 could be usefull...
+    // require(data != address(0));
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     tokenSupply++;
-    uint keyPrice = getPrice();
+
+    // calculate the price for the new supply:
+    int128 supplyInt = tokenSupply.fromUInt();
+    uint price = 1 * 10 ** 18;
+    int128 keyPriceNumerator = supplyInt.log_2();
+    int128 modifiedNumerator = keyPriceNumerator.div(CURVE_MODIFER);
+    uint256 keyPrice = modifiedNumerator.div(DENOMINATOR).mulu(price);
 
     // get current token address from lock:
     address tokenAddress = lock.tokenAddress();

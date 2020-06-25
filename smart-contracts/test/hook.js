@@ -157,8 +157,6 @@ describe('Lock Setup', () => {
       assert(supplyAfter.eq(supplyBefore.add(1)))
     })
 
-    it.skip('The price should increase predictably', async function () {})
-
     it('The price for s=10 should be 1.000...', async function () {
       const [wallet, keyPurchaser] = await ethers.getSigners()
       const s = 9
