@@ -110,8 +110,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     // @audit re-enable check before deployment !!!
     // require(msg.sender == LOCK_ADDRESS);
     require(msg.sender == _testLockAddress);
-    // @audit consider this. 0x0 could be usefull...
-    // require(data != address(0));
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     tokenSupply++;
 

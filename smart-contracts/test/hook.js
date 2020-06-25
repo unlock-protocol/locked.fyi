@@ -140,7 +140,6 @@ describe('Lock Setup', () => {
       console.log(`address1: ${address1}`)
       const priceBefore = await lockedFyiLock.keyPrice()
       await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
-      // await receipt.wait(1)
       const priceAfter = await lockedFyiLock.keyPrice()
       assert(priceAfter.gt(priceBefore))
     })
