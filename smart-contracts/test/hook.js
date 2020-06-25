@@ -2,7 +2,7 @@ const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants, utils } = require('ethers')
 const { assert } = require('chai')
 const hookJSON = require('../artifacts/BondingCurveHook.json')
-// const hookJSON = require('../artifacts/MockHook.json')
+const hookJSON = require('../artifacts/MockHook.json')
 const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers')
 const {
   deployLock,
@@ -42,35 +42,26 @@ describe('Lock Setup', () => {
     const [wallet, addr1, addr2, author] = await ethers.getSigners()
     const authorAddress = await author.getAddress()
     data = utils.hexlify(authorAddress)
-    // Get the deployed lock:
     const results = await deployLock()
     lockedFyiLock = results[0]
     tokenAddress = results[1]
 
-    // Get the deployed hook:
     if (hookAddress === undefined) {
       purchaseHook = await deployHook(10, lockedFyiLock.address)
     } else {
       purchaseHook = await ethers.getContractAt(hookABI, hookAddress)
     }
 
-    // Ensure we're using the correct signer:
     walletAddress = await wallet.getAddress()
-    assert.isOk(await lockedFyiLock.isLockManager(walletAddress))
-
-    //Register the purchase hook:
-    await lockedFyiLock.setEventHooks(
-      purchaseHook.address,
-      ZERO_ADDRESS //constants.ZeroAddress,
-    )
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
     const returnedHookAddress = await lockedFyiLock.onKeyPurchaseHook()
-    assert.equal(returnedHookAddress, purchaseHook.address)
-    // Make hook a Lock Manager
     await lockedFyiLock.addLockManager(purchaseHook.address)
-    assert.isOk(await lockedFyiLock.isLockManager(purchaseHook.address))
-
     // Set the beneficiary to the Locked-FYI-DAO address:
     // await lockedFyiLock.updateBeneficiary()
+
+    assert.isOk(await lockedFyiLock.isLockManager(walletAddress))
+    assert.equal(returnedHookAddress, purchaseHook.address)
+    assert.isOk(await lockedFyiLock.isLockManager(purchaseHook.address))
   })
 
   it('Deploys a correctly configured lock', async () => {
@@ -88,9 +79,8 @@ describe('Lock Setup', () => {
     assert(keyPrice.eq(BigNumber.from('100000000000000000')))
     assert(numberOfKeys.eq(constants.MaxUint256))
     assert.equal(name, 'Locked-fyi')
-    // Beneficiary will eventually be the DAO address
-    // assert.equal(beneficiary, DAO_ADDRESS)
     assert.equal(beneficiary, walletAddress)
+    // assert.equal(beneficiary, DAO_ADDRESS)
   })
 
   describe('Purchasing keys from the lock', () => {
@@ -212,6 +202,7 @@ describe('Lock Setup', () => {
       const lockPrice = await lockedFyiLock.keyPrice()
       const convertedPrice = lockPrice / 10 ** 18
       const expectedPrice = 6.0
+
       assert.closeTo(
         convertedPrice,
         expectedPrice,
@@ -233,6 +224,7 @@ describe('Lock Setup', () => {
       const lockPrice = await lockedFyiLock.keyPrice()
       const convertedPrice = lockPrice / 10 ** 18
       const expectedPrice = 9.0
+
       assert.closeTo(
         convertedPrice,
         expectedPrice,

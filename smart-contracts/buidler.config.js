@@ -23,6 +23,11 @@ usePlugin('@nomiclabs/buidler-solhint')
 
 module.exports = {
   defaultNetwork: 'buidlerevm',
+  networks: {
+    localhost: {
+      url: 'http://localhost:8545',
+    },
+  },
   solc: {
     version: '0.5.17',
   },
