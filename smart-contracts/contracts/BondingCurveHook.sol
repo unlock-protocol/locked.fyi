@@ -155,25 +155,14 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     // @audit re-enable check before deployment !!!
     // require(msg.sender == LOCK_ADDRESS); // 200 gas
     require(msg.sender == _testLockAddress);
-    IPublicLockV7 lock = IPublicLockV7(msg.sender); // 200 gas ?
-    // @audit sort out units
-    // @audit toUInt() rounds down and is underflow-protected. uint() is not!
-    tokenSupply++; // 5000 gas
+    IPublicLockV7 lock = IPublicLockV7(msg.sender);
+    tokenSupply++;
     uint keyPrice = getPrice();
 
-
-    // Read token address from lock and pass as 2nd arg:
-    address tokenAddress = lock.tokenAddress(); // read-only, no gas
+    // get current token address from lock:
+    address tokenAddress = lock.tokenAddress();
     lock.updateKeyPricing(keyPrice, tokenAddress);
-    // lock.updateKeyPricing(keyPrice * 10**18, tokenAddress);
-
-
-    // get author's address from calldata:
-    // console.logBytes(msg.data);
-    (address _from, address _recipient, address _referrer, uint _start, uint _minPrice, uint _pricePaid, uint _size, bytes20 _author) = abi.decode(msg.data, (address, address, address, uint, uint, uint, uint, bytes20));
-    console.logBytes20(_author);
-
-    // inform DAO to mint new share for author
-    // DAO.mint(Author, 1);
+    console.logBytes(data);
+    // DAO.mint(data, 1);
   }
 }
