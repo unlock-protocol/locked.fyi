@@ -38,7 +38,6 @@ exports.deployHook = async (_supply, _lockAddress) => {
   // set initial supply > 0 !
   hook = await BondingCurveHook.deploy(_supply, _lockAddress)
   await hook.deployed()
-  console.log(`Hook deployed at: ${hook.address}`)
   hook_Address = hook.address
   return hook
 }

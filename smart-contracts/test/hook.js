@@ -93,26 +93,6 @@ describe('Lock Setup', () => {
     assert.equal(beneficiary, walletAddress)
   })
 
-  describe('Calling the hook directly', () => {
-    it.skip('returns the correct price from mock function', async () => {
-      const supply = await purchaseHook.tokenSupply()
-      const price = await purchaseHook.getPrice()
-      // const returnedPrice = fixedPointToDecimal(priceNumerator)
-      const calculatedPrice = jsPriceCalculator(supply)
-
-      console.log(`supply: ${supply}`)
-      console.log(`price: ${(price / 10 ** 18).toString()}`)
-      console.log(`calculatedPrice: ${calculatedPrice}`)
-
-      assert.closeTo(
-        price,
-        calculatedPrice,
-        0.0000000000000006,
-        'numbers are not close enough'
-      )
-    })
-  })
-
   describe('Purchasing keys from the lock', () => {
     it('Should buy a key', async function () {
       const [wallet, addr1, addr2, author] = await ethers.getSigners()
@@ -195,14 +175,14 @@ describe('Lock Setup', () => {
       assert.closeTo(
         convertedPrice,
         expectedPrice,
-        0.000000000000001,
+        0.00000000000001,
         'numbers are not close enough'
       )
     })
 
-    it('The price for s=1000 should be 3.00043...', async function () {
+    it('The price for s=1000 should be 3.000...', async function () {
       const [wallet, keyPurchaser] = await ethers.getSigners()
-      const s = 1000
+      const s = 999
       purchaseHook = await deployHook(s, lockedFyiLock.address)
       await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
       await lockedFyiLock.addLockManager(purchaseHook.address)
@@ -212,18 +192,19 @@ describe('Lock Setup', () => {
       assert.equal(supply, s + 1)
       const lockPrice = await lockedFyiLock.keyPrice()
       const convertedPrice = lockPrice / 10 ** 18
-      const expectedPrice = 3.000434077479318
+      const expectedPrice = 3.0
+
       assert.closeTo(
         convertedPrice,
         expectedPrice,
-        0.000000000000001,
+        0.00000000000001,
         'numbers are not close enough'
       )
     })
 
     it('The price for s=1000000 should be 6.000...', async function () {
       const [wallet, keyPurchaser] = await ethers.getSigners()
-      const s = 1000000
+      const s = 999999
       purchaseHook = await deployHook(s, lockedFyiLock.address)
       await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
       await lockedFyiLock.addLockManager(purchaseHook.address)
@@ -233,18 +214,18 @@ describe('Lock Setup', () => {
       assert.equal(supply, s + 1)
       const lockPrice = await lockedFyiLock.keyPrice()
       const convertedPrice = lockPrice / 10 ** 18
-      const expectedPrice = 6.000000434294264
+      const expectedPrice = 6.0
       assert.closeTo(
         convertedPrice,
         expectedPrice,
-        0.000000000000001,
+        0.00000000000001,
         'numbers are not close enough'
       )
     })
 
     it('The price for s=1000000000 should be 9.000...', async function () {
       const [wallet, keyPurchaser] = await ethers.getSigners()
-      const s = 1000000000
+      const s = 999999999
       purchaseHook = await deployHook(s, lockedFyiLock.address)
       await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
       await lockedFyiLock.addLockManager(purchaseHook.address)
@@ -254,11 +235,11 @@ describe('Lock Setup', () => {
       assert.equal(supply, s + 1)
       const lockPrice = await lockedFyiLock.keyPrice()
       const convertedPrice = lockPrice / 10 ** 18
-      const expectedPrice = 9.000000000434293
+      const expectedPrice = 9.0
       assert.closeTo(
         convertedPrice,
         expectedPrice,
-        0.000000000000001,
+        0.00000000000001,
         'numbers are not close enough'
       )
     })
