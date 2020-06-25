@@ -188,7 +188,6 @@ describe('Lock Setup', () => {
       const address1 = await addr1.getAddress()
       const authorAddress = await author.getAddress()
       const data = authorAddress
-      console.log(`Author: ${data}`)
       const supplyBefore = await purchaseHook.tokenSupply()
       const tx = await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
       await tx.wait()

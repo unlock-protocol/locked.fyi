@@ -162,7 +162,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     // get current token address from lock:
     address tokenAddress = lock.tokenAddress();
     lock.updateKeyPricing(keyPrice, tokenAddress);
-    console.logBytes(data);
     // DAO.mint(data, 1);
   }
 }
