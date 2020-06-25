@@ -2,7 +2,6 @@ const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants, utils } = require('ethers')
 const { assert } = require('chai')
 const hookJSON = require('../artifacts/BondingCurveHook.json')
-const hookJSON = require('../artifacts/MockHook.json')
 const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers')
 const {
   deployLock,
