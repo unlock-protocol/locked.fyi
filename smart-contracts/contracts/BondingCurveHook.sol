@@ -13,18 +13,10 @@ import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 // import '@openzeppelin/contracts/math/SafeMath.sol';
-// import '@nomiclabs/buidler/console.sol';
+import '@nomiclabs/buidler/console.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
-
-  //  ██████╗██████╗ ███████╗██████╗ ██╗████████╗     █████╗ ██████╗ ██████╗ ██╗  ██╗    ██╗
-  // ██╔════╝██╔══██╗██╔════╝██╔══██╗██║╚══██╔══╝    ██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝    ██║
-  // ██║     ██████╔╝█████╗  ██║  ██║██║   ██║       ███████║██████╔╝██║  ██║█████╔╝     ██║
-  // ██║     ██╔══██╗██╔══╝  ██║  ██║██║   ██║       ██╔══██║██╔══██╗██║  ██║██╔═██╗     ╚═╝
-  // ╚██████╗██║  ██║███████╗██████╔╝██║   ██║       ██║  ██║██████╔╝██████╔╝██║  ██╗    ██╗
-  //  ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝   ╚═╝       ╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚═╝  ╚═╝    ╚═╝
-  //
-
+  // @audit add credit for ABDK LIB !!!
   // ////////////////////  Libs  ///////////////////////////
 
   using ABDKMath64x64 for int128;
@@ -50,7 +42,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   * Details on how the fixed-point numbers work here:
   * https://github.com/abdk-consulting/abdk-libraries-solidity/blob/939f0a264f2d07a9e2c7a3a020f0db2c0885dc01/ABDKMath64x64.sol#L8
    */
-  int128 private constant CURVE_MODIFER = 61261637068789420000;
+  int128 private constant CURVE_MODIFER = 61278757397652720000;
 
   //@audit Still needed ???
   // 2^64, as used by ABDKMath64x64.sol
@@ -68,19 +60,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     tokenSupply = _initialSupply;
     // @audit testing only, move to mock and remove arg from constructor
     _testLockAddress = _testLock;
-  }
-
-  function getPrice()
-    external
-    view
-    returns (int128)
-  {
-    int128 supply = tokenSupply.fromUInt();
-    int128 keyPrice = supply.log_2().div(CURVE_MODIFER);
-    // int128 modifiedTokenPrice = logTokenPrice;
-    // int128 modifiedTokenPrice = logTokenPrice.div(CURVE_MODIFER);
-    // uint256 keyPrice = modifiedTokenPrice.toUInt();
-    return keyPrice;
   }
 
 /**
@@ -103,49 +82,55 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   ) external view
     returns (uint minKeyPrice)
   {
-    // Not needed for this use-case.
+    // no-op.
   }
+
+  // https://ethereum.stackexchange.com/questions/15350/how-to-convert-an-bytes-to-address-in-solidity
+  function bytesToAddress(bytes memory b) private pure returns (address addr) {
+    assembly {
+      addr := mload(add(b,20))
+    }
+}
 
   /**
    * @notice If the lock owner has registered an implementer then this hook
    * is called with every key sold.
-   * @param from the msg.sender making the purchase
-   * @param recipient the account which will be granted a key
-   * @param referrer the account which referred this key sale
+   *  from the msg.sender making the purchase
+   *  recipient the account which will be granted a key
+   *  referrer the account which referred this key sale
    * @param data arbitrary data populated by the front-end which initiated the sale
-   * @param minKeyPrice the price including any discount granted from calling this
+   *  minKeyPrice the price including any discount granted from calling this
    * hook's `keyPurchasePrice` function
-   * @param pricePaid the value/pricePaid included with the purchase transaction
+   *  pricePaid the value/pricePaid included with the purchase transaction
    * @dev the lock's address is the `msg.sender` when this function is called
    */
   function onKeyPurchase(
-    address from,
-    address recipient,
-    address referrer,
+    address /*from**/,
+    address /*recipient**/,
+    address /*referrer**/,
     bytes calldata data,
-    uint minKeyPrice,
-    uint pricePaid
+    uint /*minKeyPrice**/,
+    uint /*pricePaid**/
   ) external
   {
-    // Ensure caller is the locked.fyi lock
-    require(msg.sender == LOCK_ADDRESS);
+    // Ensure caller is the locked.fyi lock:
+    // @audit re-enable check before deployment !!!
+    // require(msg.sender == LOCK_ADDRESS);
+    require(msg.sender == _testLockAddress);
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
-    // @audit sort out units
-    int128 supply = tokenSupply.fromUInt();
-    int128 logTokenPrice = supply.log_2();
-    int128 modifiedTokenPrice = logTokenPrice.div(CURVE_MODIFER).div(DENOMINATOR);
-    uint256 keyPrice = modifiedTokenPrice.toUInt();
-    // update current supply using internal counter
     tokenSupply++;
 
-    // Read token address from lock and pass as 2nd arg:
+    // calculate the price for the new supply:
+    int128 supply = tokenSupply.fromUInt();
+    uint keyPrice = supply.log_2().div(CURVE_MODIFER).div(DENOMINATOR).mulu(1 * 10 ** 18);
+
+    // get current token address from lock:
     address tokenAddress = lock.tokenAddress();
     lock.updateKeyPricing(keyPrice, tokenAddress);
-
-    // get author's address from calldata:
-    // address author = address(data[0]);
-
-    // inform DAO to mint new share for author
-    // DAO.mint(Author, 1);
+    // @audit For testing only ! (adds to gas-usage)
+    // console.logBytes(data);
+    address author = bytesToAddress(data);
+    console.logAddress(author);
+    // DAO.mint(data, 1);
   }
 }
