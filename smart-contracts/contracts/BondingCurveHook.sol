@@ -31,6 +31,10 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   // Address of paired lock
   address public lockAddress;
 
+  /// @dev Used internally to determine if a price-update on the lock is required.
+  /// The lock itself is the sole source of truth
+  uint256 private currentPrice;
+
   // For details: https://github.com/unlock-protocol/locked.fyi/blob/master/smart-contracts/Readme.md
   int128 private constant CURVE_MODIFER = 61278757397652720000;
   int128 private constant DENOMINATOR = 18446744073709552000;
@@ -79,19 +83,24 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   ) external
   {
     require(msg.sender == lockAddress, 'UNAUTHORIZED_ACCESS');
+
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     tokenSupply++;
 
     // calculate the price for the new supply:
     int128 supply = tokenSupply.fromUInt();
     uint keyPrice = supply.log_2().div(CURVE_MODIFER).div(DENOMINATOR).mulu(1 * 10 ** 18);
-
-    // get current token address from lock:
-    address tokenAddress = lock.tokenAddress();
     uint rounded = round(keyPrice);
-    lock.updateKeyPricing(rounded, tokenAddress);
-    address author = bytesToAddress(data);
-    // DAO.mint(data, 1);
+    if(rounded <= currentPrice) {
+      return;
+    } else {
+      currentPrice = rounded;
+      // get current token address from lock:
+      address tokenAddress = lock.tokenAddress();
+      lock.updateKeyPricing(rounded, tokenAddress);
+      address author = bytesToAddress(data);
+      // DAO.mint(data, 1);
+    }
   }
 
   // ////////////////////  Private  ///////////////////////////
