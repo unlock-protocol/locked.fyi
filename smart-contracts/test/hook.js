@@ -2,7 +2,7 @@ const { ethers } = require('@nomiclabs/buidler')
 const { BigNumber, constants, utils } = require('ethers')
 const { assert } = require('chai')
 const hookJSON = require('../artifacts/BondingCurveHook.json')
-const { expectEvent, expectRevert } = require('@openzeppelin/test-helpers')
+const { expectRevert } = require('@openzeppelin/test-helpers')
 const {
   deployLock,
   deployHook,
@@ -14,11 +14,13 @@ const hookABI = hookJSON.abi
 const provider = ethers.provider
 const DENOMINATOR = Math.pow(2, 64)
 const CURVE_MODIFIER = 3.321928094887362
-// const CURVE_MODIFIER = 3.321
 const ZERO_ADDRESS = utils.getAddress(
   '0x0000000000000000000000000000000000000000'
 )
-let walletAddress
+// temp rinkeby address
+const DAO_ADDRESS = utils.getAddress(
+  '0xb76897aac03a9769f94982e3ca5bd72874aa5ca7'
+)
 
 function jsPriceCalculator(s) {
   return Math.log2(s) / CURVE_MODIFIER / 10 ** 18
@@ -35,6 +37,7 @@ let tokenAddress
 let deployedHookAddress
 let signers
 let data
+let walletAddress
 
 describe('Lock Setup', () => {
   before(async () => {
@@ -53,14 +56,8 @@ describe('Lock Setup', () => {
 
     walletAddress = await wallet.getAddress()
     await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
-    const returnedHookAddress = await lockedFyiLock.onKeyPurchaseHook()
     await lockedFyiLock.addLockManager(purchaseHook.address)
-    // Set the beneficiary to the Locked-FYI-DAO address:
-    // await lockedFyiLock.updateBeneficiary()
-
-    assert.isOk(await lockedFyiLock.isLockManager(walletAddress))
-    assert.equal(returnedHookAddress, purchaseHook.address)
-    assert.isOk(await lockedFyiLock.isLockManager(purchaseHook.address))
+    await lockedFyiLock.updateBeneficiary(DAO_ADDRESS)
   })
 
   it('Deploys a correctly configured lock', async () => {
@@ -71,6 +68,7 @@ describe('Lock Setup', () => {
     const numberOfKeys = await lockedFyiLock.maxNumberOfKeys()
     const name = await lockedFyiLock.name()
     const beneficiary = await lockedFyiLock.beneficiary()
+    const returnedHookAddress = await lockedFyiLock.onKeyPurchaseHook()
 
     assert.equal(version, 7)
     assert(expirationDuration.eq(BigNumber.from(60 * 60 * 24 * 365)))
@@ -78,160 +76,206 @@ describe('Lock Setup', () => {
     assert(keyPrice.eq(BigNumber.from('100000000000000000')))
     assert(numberOfKeys.eq(constants.MaxUint256))
     assert.equal(name, 'Locked-fyi')
-    assert.equal(beneficiary, walletAddress)
-    // assert.equal(beneficiary, DAO_ADDRESS)
+    assert.isOk(await lockedFyiLock.isLockManager(walletAddress))
+    assert.equal(returnedHookAddress, purchaseHook.address)
+    assert.isOk(await lockedFyiLock.isLockManager(purchaseHook.address))
+    assert.equal(beneficiary, DAO_ADDRESS)
   })
 
-  describe('Purchasing keys from the lock', () => {
-    it('Should buy a key', async function () {
-      const [wallet, addr1, addr2, author] = await ethers.getSigners()
-      const address1 = await addr1.getAddress()
-      const address2 = await addr2.getAddress()
-      const authorAddress = await author.getAddress()
-      const data = authorAddress
-      const priceBefore = await lockedFyiLock.keyPrice()
-      console.log(`Original Lock Price from Lock: ${priceBefore / 10 ** 18}`)
-      const initialSupply = await purchaseHook.tokenSupply()
-      console.log(`Initial Hook supply: ${initialSupply}`)
-      const receipt = await lockedFyiLock.purchase(
-        0,
-        address1,
-        ZERO_ADDRESS,
-        data
-      )
-      await receipt.wait(1)
-      const supply1 = await purchaseHook.tokenSupply()
-      const priceAfter1Purchase = await lockedFyiLock.keyPrice()
-      console.log(`supply After 1 Purchase: ${supply1}`)
-      console.log(`Price After 1 Purchase: ${priceAfter1Purchase / 10 ** 18}`)
-      const hasKey = await lockedFyiLock.getHasValidKey(address1)
-      assert.isOk(hasKey)
-      const receipt2 = await lockedFyiLock.purchase(
-        0,
-        address2,
-        ZERO_ADDRESS,
-        data
-      )
-      await receipt2.wait()
-      const supply2 = await purchaseHook.tokenSupply()
-      const priceAfter2Purchases = await lockedFyiLock.keyPrice()
-      console.log(`supply After 2 Purchases: ${supply2}`)
-      console.log(`Price After 1 Purchase: ${priceAfter2Purchases / 10 ** 18}`)
-    })
+  it('Can still buy a key', async function () {
+    const [wallet, addr1, addr2, author] = await ethers.getSigners()
+    const address1 = await addr1.getAddress()
+    const address2 = await addr2.getAddress()
+    const authorAddress = await author.getAddress()
+    const data = authorAddress
+    const priceBefore = await lockedFyiLock.keyPrice()
+    const initialSupply = await purchaseHook.tokenSupply()
+    const receipt = await lockedFyiLock.purchase(
+      0,
+      address1,
+      ZERO_ADDRESS,
+      data
+    )
+    await receipt.wait(1)
+    const supply1 = await purchaseHook.tokenSupply()
+    const priceAfter1Purchase = await lockedFyiLock.keyPrice()
+    const hasKey = await lockedFyiLock.getHasValidKey(address1)
+    assert.isOk(hasKey)
+    const receipt2 = await lockedFyiLock.purchase(
+      0,
+      address2,
+      ZERO_ADDRESS,
+      data
+    )
+    await receipt2.wait()
+    const supply2 = await purchaseHook.tokenSupply()
+    const priceAfter2Purchases = await lockedFyiLock.keyPrice()
+  })
 
-    it('should increase the price after a purchase', async function () {
-      const [wallet, addr1, author] = await ethers.getSigners()
-      const address1 = await addr1.getAddress()
-      const walletAddress = await wallet.getAddress()
-      const authorAddress = await author.getAddress()
-      const data = authorAddress
-      console.log(`Wallet: ${walletAddress}`)
-      console.log(`address1: ${address1}`)
-      const priceBefore = await lockedFyiLock.keyPrice()
-      await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
-      const priceAfter = await lockedFyiLock.keyPrice()
-      assert(priceAfter.gt(priceBefore))
-    })
+  it('deploys a correctly configured hook', async function () {
+    const lockAddress = await purchaseHook.lockAddress()
+    assert.equal(lockAddress, lockedFyiLock.address)
+  })
 
-    it('should increment the supply counter after a purchase', async function () {
-      const [wallet, addr1, author] = await ethers.getSigners()
-      const address1 = await addr1.getAddress()
-      const authorAddress = await author.getAddress()
-      const data = authorAddress
-      const supplyBefore = await purchaseHook.tokenSupply()
-      const tx = await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
-      await tx.wait()
-      const supplyAfter = await purchaseHook.tokenSupply()
-      assert(supplyAfter.eq(supplyBefore.add(1)))
-    })
+  it('should increment the supply counter after a purchase', async function () {
+    const [wallet, addr1, author] = await ethers.getSigners()
+    const address1 = await addr1.getAddress()
+    const authorAddress = await author.getAddress()
+    const data = authorAddress
+    const supplyBefore = await purchaseHook.tokenSupply()
+    const tx = await lockedFyiLock.purchase(0, address1, ZERO_ADDRESS, data)
+    await tx.wait()
+    const supplyAfter = await purchaseHook.tokenSupply()
+    assert(supplyAfter.eq(supplyBefore.add(1)))
+  })
+})
 
-    it('The price for s=10 should be 1.000...', async function () {
-      const [wallet, keyPurchaser] = await ethers.getSigners()
-      const s = 9
-      purchaseHook = await deployHook(s, lockedFyiLock.address)
-      await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
-      await lockedFyiLock.addLockManager(purchaseHook.address)
-      const keyPurchaserAddress = await keyPurchaser.getAddress()
-      await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
-      const supply = await purchaseHook.tokenSupply()
-      assert.equal(supply, s + 1)
-      const lockPrice = await lockedFyiLock.keyPrice()
-      const convertedPrice = lockPrice / 10 ** 18
-      const expectedPrice = 1.0
-      assert.closeTo(
-        convertedPrice,
-        expectedPrice,
-        0.00000000000001,
-        'numbers are not close enough'
-      )
-    })
+describe('Benchmark prices', () => {
+  it('The price for s=10 should be 1.000...', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 9
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const supply = await purchaseHook.tokenSupply()
+    assert.equal(supply, s + 1)
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 1.0
 
-    it('The price for s=1000 should be 3.000...', async function () {
-      const [wallet, keyPurchaser] = await ethers.getSigners()
-      const s = 999
-      purchaseHook = await deployHook(s, lockedFyiLock.address)
-      await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
-      await lockedFyiLock.addLockManager(purchaseHook.address)
-      const keyPurchaserAddress = await keyPurchaser.getAddress()
-      await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
-      const supply = await purchaseHook.tokenSupply()
-      assert.equal(supply, s + 1)
-      const lockPrice = await lockedFyiLock.keyPrice()
-      const convertedPrice = lockPrice / 10 ** 18
-      const expectedPrice = 3.0
+    assert.equal(convertedPrice, expectedPrice)
+  })
 
-      assert.closeTo(
-        convertedPrice,
-        expectedPrice,
-        0.00000000000001,
-        'numbers are not close enough'
-      )
-    })
+  it('The price for s=1000 should be 3.000...', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 999
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const supply = await purchaseHook.tokenSupply()
+    assert.equal(supply, s + 1)
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 3.0
 
-    it('The price for s=1000000 should be 6.000...', async function () {
-      const [wallet, keyPurchaser] = await ethers.getSigners()
-      const s = 999999
-      purchaseHook = await deployHook(s, lockedFyiLock.address)
-      await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
-      await lockedFyiLock.addLockManager(purchaseHook.address)
-      const keyPurchaserAddress = await keyPurchaser.getAddress()
-      await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
-      const supply = await purchaseHook.tokenSupply()
-      assert.equal(supply, s + 1)
-      const lockPrice = await lockedFyiLock.keyPrice()
-      const convertedPrice = lockPrice / 10 ** 18
-      const expectedPrice = 6.0
+    assert.equal(convertedPrice, expectedPrice)
+  })
 
-      assert.closeTo(
-        convertedPrice,
-        expectedPrice,
-        0.00000000000001,
-        'numbers are not close enough'
-      )
-    })
+  it('The price for s=1000000 should be 6.000...', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 999999
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const supply = await purchaseHook.tokenSupply()
+    assert.equal(supply, s + 1)
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 6.0
 
-    it('The price for s=1000000000 should be 9.000...', async function () {
-      const [wallet, keyPurchaser] = await ethers.getSigners()
-      const s = 999999999
-      purchaseHook = await deployHook(s, lockedFyiLock.address)
-      await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
-      await lockedFyiLock.addLockManager(purchaseHook.address)
-      const keyPurchaserAddress = await keyPurchaser.getAddress()
-      await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
-      const supply = await purchaseHook.tokenSupply()
-      assert.equal(supply, s + 1)
-      const lockPrice = await lockedFyiLock.keyPrice()
-      const convertedPrice = lockPrice / 10 ** 18
-      const expectedPrice = 9.0
+    assert.equal(convertedPrice, expectedPrice)
+  })
 
-      assert.closeTo(
-        convertedPrice,
-        expectedPrice,
-        0.00000000000001,
-        'numbers are not close enough'
-      )
-    })
+  it('The price for s=1000000000 should be 9.000...', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 999999999
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const supply = await purchaseHook.tokenSupply()
+    assert.equal(supply, s + 1)
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 9.0
 
-    it.skip('Should fail if...', async function () {})
+    assert.equal(convertedPrice, expectedPrice)
+  })
+})
+
+describe('Price Rounding', () => {
+  it('The price for s=11 should be rounded to 1.1', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 11
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const supply = await purchaseHook.tokenSupply()
+    assert.equal(supply, s + 1)
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 1.1
+
+    assert.equal(convertedPrice, expectedPrice)
+  })
+
+  it('The price for s=42 should be rounded to 1.6', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 42
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const supply = await purchaseHook.tokenSupply()
+    assert.equal(supply, s + 1)
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 1.6
+
+    assert.equal(convertedPrice, expectedPrice)
+  })
+
+  it('The price for s=41 should be rounded to 1.6', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 41
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const supply = await purchaseHook.tokenSupply()
+    assert.equal(supply, s + 1)
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 1.6
+
+    assert.equal(convertedPrice, expectedPrice)
+  })
+})
+
+describe('Security', () => {
+  // it('Should fail if anyone but the lock calls onKeyPurchase', async function () {
+  //   await expectRevert(purchaseHook.onKeyPurchase(), 'UNAUTHORIZED_ACCESS')
+  // })
+
+  it.skip('Should fail if anyone but the lock calls onKeyPurchase', async function () {
+    const [wallet, addr1, author] = await ethers.getSigners()
+    const address1 = await addr1.getAddress()
+    const authorAddress = await author.getAddress()
+    const data = authorAddress
+    await purchaseHook.onKeyPurchase(
+      address1,
+      address1,
+      ZERO_ADDRESS,
+      data,
+      0,
+      0
+    ) // Error: VM Exception while processing transaction: revert UNAUTHORIZED_ACCESS
+
+    // Not working (no support for buidlerevm). Find alternate implementation.
+    // await expectRevert(
+    //   purchaseHook.onKeyPurchase(address1, address1, ZERO_ADDRESS, data, 0, 0),
+    //   'UNAUTHORIZED_ACCESS'
+    // )
   })
 })
