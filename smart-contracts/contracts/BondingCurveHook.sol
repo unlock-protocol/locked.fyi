@@ -29,7 +29,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   uint256 public tokenSupply;
 
   // Address of paired lock
-  address private lockAddress;
+  address public lockAddress;
 
   // For details: https://github.com/unlock-protocol/locked.fyi/blob/master/smart-contracts/Readme.md
   int128 private constant CURVE_MODIFER = 61278757397652720000;
@@ -78,7 +78,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     uint /*pricePaid**/
   ) external
   {
-    require(msg.sender == lockAddress, 'UNAUTHORIZED_LOCK');
+    require(msg.sender == lockAddress, 'UNAUTHORIZED_ACCESS');
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     tokenSupply++;
 
