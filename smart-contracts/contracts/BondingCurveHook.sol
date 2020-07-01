@@ -57,14 +57,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     // no-op.
   }
 
-  // Source: https://ethereum.stackexchange.com/questions/15350/how-to-convert-an-bytes-to-address-in-solidity
-  function bytesToAddress(bytes memory b) private pure returns (address addr) {
-  // solium-disable-next-line
-    assembly {
-      addr := mload(add(b,20))
-    }
-}
-
   /**
    * @notice If the lock owner has registered an implementer then this hook
    * is called with every key sold.
@@ -96,9 +88,30 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
     // get current token address from lock:
     address tokenAddress = lock.tokenAddress();
-    lock.updateKeyPricing(keyPrice, tokenAddress);
+    uint rounded = round(keyPrice);
+    lock.updateKeyPricing(rounded, tokenAddress);
     address author = bytesToAddress(data);
-    console.logAddress(author);
     // DAO.mint(data, 1);
   }
+
+  // ////////////////////  Private  ///////////////////////////
+
+  // Source: https://ethereum.stackexchange.com/questions/15350/how-to-convert-an-bytes-to-address-in-solidity
+  function bytesToAddress(bytes memory b) private pure returns (address addr) {
+  // solium-disable-next-line
+    assembly {
+      addr := mload(add(b,20))
+    }
+  }
+
+   function round(uint n) public pure returns (uint) {
+        uint lower = ((n - 1) / 100000000000000000) * 100000000000000000;
+        uint upper = ((n + 100000000000000000 - 1) / 100000000000000000) * 100000000000000000;
+        uint half = (lower + upper) / 2;
+        if(n < half) {
+            return lower;
+        } else {
+            return upper;
+        }
+    }
 }
