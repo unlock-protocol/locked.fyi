@@ -208,18 +208,63 @@ describe('Price Rounding', () => {
     assert.equal(convertedPrice, expectedPrice)
   })
 
-  it('The price for s=35 should be rounded to 1.6', async function () {
+  it('The price for s=3 should be rounded to 0.5', async function () {
+    const [wallet, keyPurchaser] = await ethers.getSigners()
+    const s = 2
+    purchaseHook = await deployHook(s, lockedFyiLock.address)
+    await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    await lockedFyiLock.addLockManager(purchaseHook.address)
+    const keyPurchaserAddress = await keyPurchaser.getAddress()
+    const tx = await lockedFyiLock.purchase(
+      0,
+      keyPurchaserAddress,
+      ZERO_ADDRESS,
+      data
+    )
+    const receipt = await tx.wait()
+    const events = receipt.events
+    events.map((e) => {
+      console.log(`event: ${e.event}`)
+      console.log(`event: ${e.args}`)
+    })
+    const foundEvents = receipt.events.filter(
+      (l) => l.event === 'PricingChanged'
+    )
+    const supply = await purchaseHook.tokenSupply()
+    const lockPrice = await lockedFyiLock.keyPrice()
+    const convertedPrice = lockPrice / 10 ** 18
+    const expectedPrice = 0.5
+
+    assert.equal(supply, s + 1)
+    assert.equal(foundEvents.length, 1)
+    assert.equal(convertedPrice, expectedPrice)
+  })
+
+  it('The price for s=35 should be rounded to 1.5', async function () {
     const [wallet, keyPurchaser] = await ethers.getSigners()
     const s = 34
     purchaseHook = await deployHook(s, lockedFyiLock.address)
     await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
     await lockedFyiLock.addLockManager(purchaseHook.address)
     const keyPurchaserAddress = await keyPurchaser.getAddress()
-    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const tx = await lockedFyiLock.purchase(
+      0,
+      keyPurchaserAddress,
+      ZERO_ADDRESS,
+      data
+    )
+    const txResponse = await tx.wait()
+    const receipt = await ethers.provider.getTransactionReceipt(
+      txResponse.transactionHash
+    )
+    console.log(`Gas Used, s=35: ${receipt.gasUsed}`)
+    console.log(`logs: ${receipt.logs[0].args}`)
+
     const supply = await purchaseHook.tokenSupply()
     assert.equal(supply, s + 1)
     const lockPrice = await lockedFyiLock.keyPrice()
     const convertedPrice = lockPrice / 10 ** 18
+    console.log(`convertedPrice: ${convertedPrice}`)
     const expectedPrice = 1.5
 
     assert.equal(convertedPrice, expectedPrice)
@@ -232,11 +277,24 @@ describe('Price Rounding', () => {
     await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
     await lockedFyiLock.addLockManager(purchaseHook.address)
     const keyPurchaserAddress = await keyPurchaser.getAddress()
-    await lockedFyiLock.purchase(0, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const tx = await lockedFyiLock.purchase(
+      0,
+      keyPurchaserAddress,
+      ZERO_ADDRESS,
+      data
+    )
+    const txResponse = await tx.wait()
+    const receipt = await ethers.provider.getTransactionReceipt(
+      txResponse.transactionHash
+    )
+    console.log(`Gas Used, s=36: ${receipt.gasUsed}`)
+    console.log(`logs: ${receipt.logs[0]}`)
+
     const supply = await purchaseHook.tokenSupply()
     assert.equal(supply, s + 1)
     const lockPrice = await lockedFyiLock.keyPrice()
     const convertedPrice = lockPrice / 10 ** 18
+    console.log(`convertedPrice: ${convertedPrice}`)
     const expectedPrice = 1.6
 
     assert.equal(convertedPrice, expectedPrice)
@@ -259,8 +317,9 @@ describe('Price Rounding', () => {
     const receipt = await ethers.provider.getTransactionReceipt(
       txResponse.transactionHash
     )
-    console.log(`receipt: ${receipt.gasUsed}`)
+    console.log(`Gas Used: ${receipt.gasUsed}`)
   })
+
   it.skip('should NOT update the price when rounded price is unchanged', async function () {})
 })
 
