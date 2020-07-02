@@ -283,6 +283,8 @@ describe('Price Rounding', () => {
     const s = 35
     purchaseHook = await deployHook(s, lockedFyiLock.address)
     await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
+    const hookAddr = await lockedFyiLock.onKeyPurchaseHook()
+    assert.equal(hookAddr, purchaseHook.address)
     await lockedFyiLock.addLockManager(purchaseHook.address)
     const keyPurchaserAddress = await keyPurchaser.getAddress()
     const keyPriceBefore = await lockedFyiLock.keyPrice()
@@ -410,7 +412,8 @@ describe('Price Rounding', () => {
 })
 
 describe('Security', () => {
-  it.skip('Should fail if anyone but the lock calls onKeyPurchase', async function () {
+  // this should fail !
+  it('Should fail if anyone but the lock calls onKeyPurchase', async function () {
     const [wallet, addr1, author] = await ethers.getSigners()
     const address1 = await addr1.getAddress()
     const authorAddress = await author.getAddress()
