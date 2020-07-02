@@ -16,16 +16,22 @@ const provider = ethers.provider
 let hook_Address
 
 exports.deployToken = async () => {
-  const [wallet] = await ethers.getSigners()
+  const [wallet, addr1, addr2] = await ethers.getSigners()
   const Token = await ethers.getContractFactory('TestToken', wallet)
   const token = await Token.deploy()
   await token.deployed()
   const walletAddress = await wallet.getAddress()
-  const receipt = await token.initialize(walletAddress)
-  await receipt.wait()
-  await token.mint(walletAddress, BigNumber.from(1))
+  const address1 = await addr1.getAddress()
+  const address2 = await addr2.getAddress()
+  await token.initialize(walletAddress)
+  await token.mint(
+    walletAddress,
+    BigNumber.from(1000).mul('1000000000000000000')
+  )
+  await token.mint(address1, BigNumber.from(1000).mul('1000000000000000000'))
+  await token.mint(address2, BigNumber.from(1000).mul('1000000000000000000'))
   console.log(`Test ERC20-token deployed at: ${token.address}`)
-  return token.address
+  return token
 }
 
 exports.deployHook = async (_supply, _lockAddress) => {
@@ -77,12 +83,12 @@ exports.deployLock = async () => {
   console.log(`Unlock deployed at: ${unlock.address}`)
 
   // get the deployed address for the test token
-  const tokenAddress = await this.deployToken()
+  const token = await this.deployToken()
 
   // deploy a lock to mimic the real locked.fyi lock:
   tx = await unlock.createLock(
     BigNumber.from(60 * 60 * 24 * 365), // 1 year
-    tokenAddress, // TestToken address
+    token.address, // TestToken address
     BigNumber.from('100000000000000000'), // 0.1 DAI  (0.1 / 10 ** 18)
     constants.MaxUint256, // Number of Keys
     'Locked-fyi', // Name
@@ -92,5 +98,5 @@ exports.deployLock = async () => {
   const newLockAddress = receipt.events[0].args.newLockAddress
   console.log(`New Lock deployed at: ${newLockAddress}`)
   const lockedFyiLock = await ethers.getContractAt(LockABI, newLockAddress)
-  return [lockedFyiLock, tokenAddress]
+  return [lockedFyiLock, token]
 }
