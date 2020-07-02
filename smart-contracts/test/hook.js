@@ -30,8 +30,6 @@ function fixedPointToDecimal(int128Numerator) {
   return int128Numerator / DENOMINATOR
 }
 
-const waitFor = (p) => p.then((tx) => tx.wait())
-
 let hook
 let lockedFyiLock
 let purchaseHook
@@ -108,7 +106,6 @@ describe('Lock Setup', () => {
     const receipt = await tx.wait()
     const balanceAfter = await token.balanceOf(address1)
     const lockBalanceAfter = await token.balanceOf(lockedFyiLock.address)
-    console.log(`Gas -first purchase w/price update: ${receipt.gasUsed}`)
     const hasKey = await lockedFyiLock.getHasValidKey(address1)
     assert.isOk(hasKey)
     assert(balanceAfter.lte(balanceBefore))
@@ -307,7 +304,7 @@ describe('Price Rounding', () => {
 
   it('should update the price when rounded price steps up', async function () {
     const [wallet, keyPurchaser, keyPurchaser2] = await ethers.getSigners()
-    const s = 34
+    const s = 3
     purchaseHook = await deployHook(s, lockedFyiLock.address)
     await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
     await lockedFyiLock.addLockManager(purchaseHook.address)
@@ -344,8 +341,8 @@ describe('Price Rounding', () => {
 
     const receipt = await tx.wait()
     const receipt2 = await tx2.wait()
-    console.log(`Gas:Key ext w/price update,: ${receipt.gasUsed}`)
-    console.log(`Gas:First key w/price update : ${receipt2.gasUsed}`)
+    console.log(`Gas- First key, w/price update : ${receipt2.gasUsed}`)
+    console.log(`Gas- Key extension, w/price update,: ${receipt.gasUsed}`)
     const foundEvents = receipt.events.filter(
       (l) => l.event === 'PricingChanged'
     )
@@ -359,7 +356,7 @@ describe('Price Rounding', () => {
       keyPurchaser2,
       keyPurchaser3,
     ] = await ethers.getSigners()
-    const s = 30
+    const s = 1000000
 
     purchaseHook = await deployHook(s, lockedFyiLock.address)
     await lockedFyiLock.setEventHooks(purchaseHook.address, ZERO_ADDRESS)
@@ -368,17 +365,24 @@ describe('Price Rounding', () => {
     const keyPurchaserAddress = await keyPurchaser.getAddress()
     const keyPurchaser3Address = await keyPurchaser3.getAddress()
     const keyPrice1 = await lockedFyiLock.keyPrice()
+    const lockAskeyPurchaser = await lockedFyiLock.connect(keyPurchaser)
+    await lockAskeyPurchaser.purchase(
+      keyPrice1,
+      keyPurchaserAddress,
+      ZERO_ADDRESS,
+      data
+    )
 
-    await lockedFyiLock
-      .connect(keyPurchaser)
-      .purchase(keyPrice1, keyPurchaserAddress, ZERO_ADDRESS, data)
     const keyPrice2 = await lockedFyiLock.keyPrice()
-
-    const tx = await lockedFyiLock
-      .connect(keyPurchaser)
-      .purchase(keyPrice2, keyPurchaserAddress, ZERO_ADDRESS, data)
+    const tx = await lockAskeyPurchaser.purchase(
+      keyPrice2,
+      keyPurchaserAddress,
+      ZERO_ADDRESS,
+      data
+    )
     const hasKey = await lockedFyiLock.getHasValidKey(keyPurchaser3Address)
     assert.isNotOk(hasKey)
+    const lockAskeyPurchaser3 = await lockedFyiLock.connect(keyPurchaser3)
 
     await token
       .connect(keyPurchaser3)
@@ -387,13 +391,16 @@ describe('Price Rounding', () => {
         BigNumber.from(1000).mul('1000000000000000000')
       )
     const keyPrice3 = await lockedFyiLock.keyPrice()
-    const tx2 = await lockedFyiLock
-      .connect(keyPurchaser3)
-      .purchase(keyPrice3, keyPurchaser3Address, ZERO_ADDRESS, data)
+    const tx2 = await lockAskeyPurchaser3.purchase(
+      keyPrice3,
+      keyPurchaser3Address,
+      ZERO_ADDRESS,
+      data
+    )
     const receipt = await tx.wait()
     const receipt2 = await tx2.wait()
-    console.log(`Gas- No price update, key extension: ${receipt.gasUsed}`)
-    console.log(`Gas- No price update, first key: ${receipt2.gasUsed}`)
+    console.log(`Gas- First key, No price update: ${receipt2.gasUsed}`)
+    console.log(`Gas- Key extension, No price update, : ${receipt.gasUsed}`)
     const foundEvents = receipt.events.filter(
       (l) => l.event === 'PricingChanged'
     )
@@ -403,10 +410,6 @@ describe('Price Rounding', () => {
 })
 
 describe('Security', () => {
-  // it('Should fail if anyone but the lock calls onKeyPurchase', async function () {
-  //   await expectRevert(purchaseHook.onKeyPurchase(), 'UNAUTHORIZED_ACCESS')
-  // })
-
   it.skip('Should fail if anyone but the lock calls onKeyPurchase', async function () {
     const [wallet, addr1, author] = await ethers.getSigners()
     const address1 = await addr1.getAddress()
