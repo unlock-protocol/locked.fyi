@@ -56,9 +56,8 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     bytes calldata data
   ) external view
     returns (uint minKeyPrice)
-  // solium-disable-next-line
   {
-    // no-op.
+    return IPublicLockV7(msg.sender).keyPrice();
   }
 
   /**
