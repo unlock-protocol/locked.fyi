@@ -16,13 +16,14 @@ const provider = ethers.provider
 let hook_Address
 
 exports.deployToken = async () => {
-  const [wallet, addr1, addr2] = await ethers.getSigners()
+  const [wallet, addr1, addr2, addr3] = await ethers.getSigners()
   const Token = await ethers.getContractFactory('TestToken', wallet)
   const token = await Token.deploy()
   await token.deployed()
   const walletAddress = await wallet.getAddress()
   const address1 = await addr1.getAddress()
   const address2 = await addr2.getAddress()
+  const address3 = await addr3.getAddress()
   await token.initialize(walletAddress)
   await token.mint(
     walletAddress,
@@ -30,6 +31,7 @@ exports.deployToken = async () => {
   )
   await token.mint(address1, BigNumber.from(1000).mul('1000000000000000000'))
   await token.mint(address2, BigNumber.from(1000).mul('1000000000000000000'))
+  await token.mint(address3, BigNumber.from(1000).mul('1000000000000000000'))
   console.log(`Test ERC20-token deployed at: ${token.address}`)
   return token
 }
