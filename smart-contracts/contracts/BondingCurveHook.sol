@@ -12,7 +12,6 @@ pragma solidity ^0.5.17;
 import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
-// import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@nomiclabs/buidler/console.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
@@ -30,6 +29,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   // Address of paired lock
   address public lockAddress;
+  address private tokenManagerAddress;
 
   /// @dev Used internally to determine if a price-update on the lock is required.
   /// The lock itself is the sole source of truth
@@ -47,6 +47,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   constructor(uint _initialSupply, address _lock) public {
     tokenSupply = _initialSupply;
     lockAddress = _lock;
+    // tokenManagerAddress = _tokenManagerAddress;
   }
 
   function keyPurchasePrice(
@@ -83,23 +84,23 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   {
     require(msg.sender == lockAddress, 'UNAUTHORIZED_ACCESS');
 
+    address author = bytesToAddress(data);
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
+    // ItokenManager tokenManager = ITokenManager(tokenManageAddress);
     tokenSupply++;
 
     // calculate the price for the new supply:
     int128 supply = tokenSupply.fromUInt();
     uint keyPrice = supply.log_2().div(CURVE_MODIFER).div(DENOMINATOR).mulu(1 * 10 ** 18);
     uint rounded = round(keyPrice);
-    if(rounded <= currentPrice) {
-      return;
-    } else {
+
+    // @review
+    if(rounded > currentPrice) {
       currentPrice = rounded;
-      // get current token address from lock:
       address tokenAddress = lock.tokenAddress();
       lock.updateKeyPricing(rounded, tokenAddress);
-      address author = bytesToAddress(data);
-      // DAO.mint(data, 1);
     }
+      // tokenManager.mint(author, 1);
   }
 
   // ////////////////////  Private  ///////////////////////////
