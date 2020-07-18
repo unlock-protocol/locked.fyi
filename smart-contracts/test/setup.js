@@ -1,5 +1,5 @@
 const { ethers } = require('@nomiclabs/buidler')
-const { BigNumber, constants } = require('ethers')
+const { BigNumber, constants, utils } = require('ethers')
 const { assert } = require('chai')
 const UnlockJSON = require('@unlock-protocol/unlock-abi-7/Unlock.json')
 const LockJSON = require('@unlock-protocol/unlock-abi-7/PublicLock.json')
@@ -12,6 +12,10 @@ const UnlockBytecode = UnlockJSON.bytecode
 const LockBytecode = LockJSON.bytecode
 const HookBytecode = HookJSON.bytecode
 const provider = ethers.provider
+
+const TOKEN_MANAGER_ADDRESS = utils.getAddress(
+  '0xd718388e922e5d23e3349dacb5d8a283f63f95e4'
+)
 
 let hook_Address
 
@@ -44,7 +48,11 @@ exports.deployHook = async (_supply, _lockAddress) => {
     wallet
   )
   // set initial supply > 0 !
-  hook = await BondingCurveHook.deploy(_supply, _lockAddress)
+  hook = await BondingCurveHook.deploy(
+    _supply,
+    _lockAddress,
+    TOKEN_MANAGER_ADDRESS
+  )
   await hook.deployed()
   hook_Address = hook.address
   return hook

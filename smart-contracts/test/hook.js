@@ -21,6 +21,9 @@ const ZERO_ADDRESS = utils.getAddress(
 const DAO_ADDRESS = utils.getAddress(
   '0xb76897aac03a9769f94982e3ca5bd72874aa5ca7'
 )
+const TOKEN_MANAGER_ADDRESS = utils.getAddress(
+  '0xd718388e922e5d23e3349dacb5d8a283f63f95e4'
+)
 
 function jsPriceCalculator(s) {
   return Math.log2(s) / CURVE_MODIFIER / 10 ** 18
@@ -50,7 +53,11 @@ describe('Lock Setup', () => {
     token = results[1]
 
     if (hookAddress === undefined) {
-      purchaseHook = await deployHook(10, lockedFyiLock.address)
+      purchaseHook = await deployHook(
+        10,
+        lockedFyiLock.address,
+        TOKEN_MANAGER_ADDRESS
+      )
     } else {
       purchaseHook = await ethers.getContractAt(hookABI, hookAddress)
     }
