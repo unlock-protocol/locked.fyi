@@ -32,7 +32,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   address private tokenManagerAddress;
 
   /// @dev Used internally to determine if a price-update on the lock is required.
-  /// The lock itself is the sole source of truth
   uint256 private currentPrice;
 
   // For details: https://github.com/unlock-protocol/locked.fyi/blob/master/smart-contracts/Readme.md
@@ -44,10 +43,10 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   /// @param _initialSupply The initial value for tokenSupply
   /// @param _lock The address of the lock configured to use this hook.
   /// @dev _initialSupply must be > 0 to avoid a revert
-  constructor(uint _initialSupply, address _lock) public {
+  constructor(uint _initialSupply, address _lock, address _tokenManagerAddress) public {
     tokenSupply = _initialSupply;
     lockAddress = _lock;
-    // tokenManagerAddress = _tokenManagerAddress;
+    tokenManagerAddress = _tokenManagerAddress;
   }
 
   function keyPurchasePrice(
@@ -94,7 +93,6 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     uint keyPrice = supply.log_2().div(CURVE_MODIFER).div(DENOMINATOR).mulu(1 * 10 ** 18);
     uint rounded = round(keyPrice);
 
-    // @review
     if(rounded > currentPrice) {
       currentPrice = rounded;
       address tokenAddress = lock.tokenAddress();
