@@ -1,9 +1,9 @@
-const { ethers } = require('@nomiclabs/buidler')
-const { BigNumber, constants, utils } = require('ethers')
-const { assert } = require('chai')
+const {ethers} = require('@nomiclabs/buidler')
+const {BigNumber, constants, utils} = require('ethers')
+const {assert} = require('chai')
 const hookJSON = require('../artifacts/BondingCurveHook.json')
 // const { expectRevert } = require('@openzeppelin/test-helpers')
-const { deployLock, deployHook, hookAddress } = require('./setup.js')
+const {deployLock, deployHook, hookAddress} = require('./setup.js')
 
 const hookABI = hookJSON.abi
 const ZERO_ADDRESS = utils.getAddress(

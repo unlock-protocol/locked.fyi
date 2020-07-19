@@ -1,5 +1,5 @@
-const { ethers } = require('@nomiclabs/buidler')
-const { BigNumber, constants, utils } = require('ethers')
+const {ethers} = require('@nomiclabs/buidler')
+const {BigNumber, constants, utils} = require('ethers')
 const UnlockJSON = require('@unlock-protocol/unlock-abi-7/Unlock.json')
 const LockJSON = require('@unlock-protocol/unlock-abi-7/PublicLock.json')
 const HookJSON = require('../artifacts/BondingCurveHook.json')
