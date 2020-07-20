@@ -2,9 +2,13 @@
 cache
 artifacts
 coverage*
+deployments/buidlerevm*
+deployments/localhost*
 
 # dependencies
 node_modules/
 
 # config
 .mocharc.json
+.env
+
