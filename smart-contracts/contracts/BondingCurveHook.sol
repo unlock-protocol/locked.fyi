@@ -12,7 +12,6 @@ pragma solidity ^0.5.17;
 import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
-import '@nomiclabs/buidler/console.sol';
 import './ITokenManager.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
