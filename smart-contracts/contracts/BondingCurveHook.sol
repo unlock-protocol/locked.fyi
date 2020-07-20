@@ -84,11 +84,9 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   {
     require(msg.sender == lockAddress, 'UNAUTHORIZED_ACCESS');
     address author = bytesToAddress(data);
-    // @review how to best handle this. We don't want to block purchase, just the minting of new dao shares.
     require(msg.sender != author, 'MINT_TO_SELF');
 
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
-    ITokenManager tokenManager = ITokenManager(tokenManagerAddress);
     tokenSupply++;
 
     // calculate the price for the new supply:
