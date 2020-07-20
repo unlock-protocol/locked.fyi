@@ -13,6 +13,7 @@ import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 import '@nomiclabs/buidler/console.sol';
+import './ITokenManager.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
@@ -82,10 +83,12 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   ) external
   {
     require(msg.sender == lockAddress, 'UNAUTHORIZED_ACCESS');
-
     address author = bytesToAddress(data);
+    // @review how to best handle this. We don't want to block purchase, just the minting of new dao shares.
+    require(msg.sender != author, 'MINT_TO_SELF');
+
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
-    // ItokenManager tokenManager = ITokenManager(tokenManageAddress);
+    ITokenManager tokenManager = ITokenManager(tokenManagerAddress);
     tokenSupply++;
 
     // calculate the price for the new supply:
@@ -98,7 +101,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
       address tokenAddress = lock.tokenAddress();
       lock.updateKeyPricing(rounded, tokenAddress);
     }
-      // tokenManager.mint(author, 1);
+      ITokenManager(tokenManagerAddress).mint(author, 1);
   }
 
   // ////////////////////  Private  ///////////////////////////
