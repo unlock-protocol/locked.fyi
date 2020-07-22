@@ -3,6 +3,7 @@ usePlugin('buidler-ethers-v5')
 usePlugin('solidity-coverage')
 // usePlugin('buidler-gas-reporter')
 usePlugin('@nomiclabs/buidler-solhint')
+usePlugin('@nomiclabs/buidler-etherscan')
 
 module.exports = {
   defaultNetwork: 'buidlerevm',
@@ -20,5 +21,9 @@ module.exports = {
     currency: 'USD',
     excludeContracts: [],
     gasPrice: 5,
+  },
+  etherscan: {
+    url: 'https://api-RINKEBY.etherscan.io/api',
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 }
