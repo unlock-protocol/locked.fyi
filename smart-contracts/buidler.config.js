@@ -52,12 +52,12 @@ module.exports = {
     },
     lock: {
       default: 4,
-      1: '',
+      1: '0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3',
       4: '0x616a27F4447E563501630C728F36997A51D59b61',
     },
     tokenManager: {
       default: 4,
-      1: '',
+      1: '', // undeployed
       4: '0xd718388e922e5d23e3349dacb5d8a283f63f95e4',
     },
   },
