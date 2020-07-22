@@ -7,15 +7,17 @@ usePlugin('@nomiclabs/buidler-etherscan')
 usePlugin('buidler-deploy')
 
 const mnemonic = process.env.MNEMONIC
-if (!mnemonic || mnemonic === '') {
-  throw new Error(`environment variable "MNEMONIC" not configured `)
+if (mnemonic === '' || !mnemonic) {
+  throw new Error('Must add a mnemonic')
+}
+
+const key = process.env.ETHERSCAN_API_KEY
+
+if (apiKey === '' || !apiKey) {
+  throw new Error('Must add an Etherscan API Key')
 }
 
 const accounts = mnemonic
-  ? {
-      mnemonic,
-    }
-  : undefined
 
 module.exports = {
   defaultNetwork: 'buidlerevm',
@@ -40,7 +42,7 @@ module.exports = {
   },
   etherscan: {
     url: 'https://api-RINKEBY.etherscan.io/api',
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: key,
   },
   namedAccounts: {
     deployer: {
