@@ -399,12 +399,22 @@ describe('Security', () => {
       data,
       0,
       0
-    ) // Error: VM Exception while processing transaction: revert UNAUTHORIZED_ACCESS
+    )
+    // @todo Should revert with: Error: VM Exception while processing transaction: revert UNAUTHORIZED_ACCESS
+  })
 
-    // Not working (no support for buidlerevm). Find alternate implementation.
-    // await expectRevert(
-    //   purchaseHook.onKeyPurchase(address1, address1, ZERO_ADDRESS, data, 0, 0),
-    //   'UNAUTHORIZED_ACCESS'
-    // )
+  it('should not mint if data.length != 20', async () => {
+    const [wallet, addr1, author] = await ethers.getSigners()
+    const address1 = await addr1.getAddress()
+    data = ['0x42']
+    await purchaseHook.onKeyPurchase(
+      address1,
+      address1,
+      ZERO_ADDRESS,
+      data,
+      0,
+      0
+    )
+    // @todo confirm that the dao did not mint !
   })
 })
