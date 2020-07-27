@@ -83,7 +83,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   {
     require(msg.sender == lockAddress, 'UNAUTHORIZED_ACCESS');
     address author = bytesToAddress(data);
-    require(msg.sender != author, 'MINT_TO_SELF');
+
 
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     tokenSupply++;
@@ -98,13 +98,16 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
       address tokenAddress = lock.tokenAddress();
       lock.updateKeyPricing(rounded, tokenAddress);
     }
-      ITokenManager(tokenManagerAddress).mint(author, 1);
+      if(author != address(0)) {
+        // ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
+      }
   }
 
   // ////////////////////  Private  ///////////////////////////
 
   // Source: https://ethereum.stackexchange.com/questions/15350/how-to-convert-an-bytes-to-address-in-solidity
   function bytesToAddress(bytes memory b) private pure returns (address addr) {
+    require(b.length == 20, 'INVALID_BYTES_LENGTH');
   // solium-disable-next-line
     assembly {
       addr := mload(add(b,20))
