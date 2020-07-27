@@ -403,7 +403,7 @@ describe('Security', () => {
     // @todo Should revert with: Error: VM Exception while processing transaction: revert UNAUTHORIZED_ACCESS
   })
 
-  it('should not mint if data.length != 20', async () => {
+  it('should not fail if data.length != 20', async () => {
     const [wallet, addr1, author] = await ethers.getSigners()
     const address1 = await addr1.getAddress()
     data = ['0x42']
