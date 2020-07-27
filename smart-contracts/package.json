@@ -32,6 +32,7 @@
   },
   "scripts": {
     "test": "buidler compile && mocha --bail --recursive test",
-    "deploy": "npx buidler deploy --network rinkeby"
+    "deploy-rinkeby": "npx buidler deploy --network rinkeby",
+    "deploy-local": "npx buidler deploy --network buidlerevm"
   }
 }
