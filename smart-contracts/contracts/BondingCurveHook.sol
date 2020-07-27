@@ -99,7 +99,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
       lock.updateKeyPricing(rounded, tokenAddress);
     }
       if(author != address(0)) {
-        // ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
+        ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
       }
   }
 
