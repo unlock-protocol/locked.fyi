@@ -7,6 +7,7 @@ usePlugin('@nomiclabs/buidler-etherscan')
 usePlugin('buidler-deploy')
 
 const mnemonic = process.env.MNEMONIC
+
 if (!mnemonic || mnemonic === '') {
   throw new Error(`environment variable "MNEMONIC" not configured `)
 }
@@ -30,10 +31,21 @@ module.exports = {
   },
   solc: {
     version: '0.5.17',
+    optimizer: {
+      enabled: false,
+      runs: 200,
+    },
+    evmVersion: 'istanbul',
+  },
+  paths: {
+    sources: './contracts',
+    tests: './test',
+    cache: './cache',
+    artifacts: './artifacts',
   },
   gasReporter: {
     src: './contracts',
-    enabled: true,
+    enabled: process.env.REPORT_GAS ? true : false,
     currency: 'USD',
     excludeContracts: [],
     gasPrice: 5,
@@ -44,24 +56,24 @@ module.exports = {
   },
   namedAccounts: {
     deployer: {
-      default: 4,
-      1: accounts[0],
-      4: accounts[0],
+      default: 0,
+      1: '',
+      4: process.env.N44O_DEPLOYER,
     },
     lock: {
-      default: 4,
-      1: '',
-      4: '0x616a27F4447E563501630C728F36997A51D59b61',
+      default: 1,
+      1: '0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3',
+      4: '0x4eacB8C1C3925B4C7276a7f517ad3B7A8Aa5c831',
     },
     hook: {
-      default: 4,
-      1: '',
-      4: '0x17d3e2f064A09848b8C62FcDB6606E7330A8cdd2',
+      default: 2,
+      1: '', // undeployed
+      4: '0x556a52cEAbFB97BEf93a7f1CcE7f1f49d058D80E',
     },
     tokenManager: {
-      default: 4,
-      1: '',
-      4: '0xd718388e922e5d23e3349dacb5d8a283f63f95e4',
+      default: 3,
+      1: '', // undeployed
+      4: '0xea123bda945ff925ff8db19b7e108dfe8f632df5',
     },
   },
 }
