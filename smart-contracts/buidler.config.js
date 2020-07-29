@@ -68,12 +68,12 @@ module.exports = {
     hook: {
       default: 2,
       1: '', // undeployed
-      4: '0x556a52cEAbFB97BEf93a7f1CcE7f1f49d058D80E',
+      4: '0x1760e395439Db07222ACf1232A5ba409AE47B6DE',
     },
     tokenManager: {
       default: 3,
       1: '', // undeployed
-      4: '0xea123bda945ff925ff8db19b7e108dfe8f632df5',
+      4: '0x872cb86098f876db29746690b1ae1f0b39cdcd5e',
     },
   },
 }
