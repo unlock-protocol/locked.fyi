@@ -45,7 +45,7 @@ module.exports = {
   },
   gasReporter: {
     src: './contracts',
-    enabled: process.env.REPORT_GAS ? true : false,
+    enabled: false,
     currency: 'USD',
     excludeContracts: [],
     gasPrice: 5,
@@ -58,7 +58,7 @@ module.exports = {
     deployer: {
       default: 0,
       1: '',
-      4: process.env.N44O_DEPLOYER,
+      4: process.env.DEPLOYER,
     },
     lock: {
       default: 1,
