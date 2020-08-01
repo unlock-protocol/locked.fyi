@@ -114,7 +114,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     }
   }
 
-   function round(uint n) public pure returns (uint) {
+   function round(uint n) private pure returns (uint) {
         uint lower = ((n - 1) / 100000000000000000) * 100000000000000000;
         uint upper = ((n + 100000000000000000 - 1) / 100000000000000000) * 100000000000000000;
         uint half = (lower + upper) / 2;
