@@ -1,6 +1,5 @@
 const { ethers } = require('@nomiclabs/buidler')
-const { BigNumber, constants } = require('ethers')
-const { assert } = require('chai')
+const { BigNumber, constants, utils } = require('ethers')
 const UnlockJSON = require('@unlock-protocol/unlock-abi-7/Unlock.json')
 const LockJSON = require('@unlock-protocol/unlock-abi-7/PublicLock.json')
 const HookJSON = require('../artifacts/BondingCurveHook.json')
@@ -11,9 +10,12 @@ const LockABI = LockJSON.abi
 const UnlockBytecode = UnlockJSON.bytecode
 const LockBytecode = LockJSON.bytecode
 const HookBytecode = HookJSON.bytecode
-const provider = ethers.provider
+const TOKEN_MANAGER_ADDRESS = utils.getAddress(
+  '0xd718388e922e5d23e3349dacb5d8a283f63f95e4'
+)
 
-let hook_Address
+let addressOfHook
+let hook
 
 exports.deployToken = async () => {
   const [wallet, addr1, addr2, addr3] = await ethers.getSigners()
@@ -44,15 +46,19 @@ exports.deployHook = async (_supply, _lockAddress) => {
     wallet
   )
   // set initial supply > 0 !
-  hook = await BondingCurveHook.deploy(_supply, _lockAddress)
+  hook = await BondingCurveHook.deploy(
+    _supply,
+    _lockAddress,
+    TOKEN_MANAGER_ADDRESS
+  )
   await hook.deployed()
-  hook_Address = hook.address
+  addressOfHook = hook.address
   return hook
 }
-exports.hookAddress = hook_Address
+exports.hookAddress = addressOfHook
 
 exports.deployLock = async () => {
-  const [wallet, lockCreator] = await ethers.getSigners()
+  const [wallet] = await ethers.getSigners()
 
   // deploy a Lock and get the address:
   const Lock = await ethers.getContractFactory(LockABI, LockBytecode, wallet)
@@ -67,20 +73,19 @@ exports.deployLock = async () => {
   )
   const unlock = await Unlock.deploy()
   await unlock.deployed()
-  let ownerAddress = await wallet.getAddress()
+  const ownerAddress = await wallet.getAddress()
   let tx = await unlock.initialize(ownerAddress)
   await tx.wait()
-  let unlockOwner = await unlock.owner()
   await unlock.configUnlock(
     'KEY',
     'https://locksmith.unlock-protocol.com/api/key/'
   )
 
-  await unlock.setLockTemplate(lockTemplate.address).then((tx) => {
+  await unlock.setLockTemplate(lockTemplate.address).then(tx => {
     tx.wait()
   })
   await tx.wait()
-  let publicLockAddress = await unlock.publicLockAddress()
+  const publicLockAddress = await unlock.publicLockAddress()
   console.log(`Lock Template deployed at: ${publicLockAddress}`)
   console.log(`Unlock deployed at: ${unlock.address}`)
 
@@ -96,7 +101,7 @@ exports.deployLock = async () => {
     'Locked-fyi', // Name
     '0x007000000000000000000000' // bytes12 Salt
   )
-  receipt = await tx.wait()
+  const receipt = await tx.wait()
   const newLockAddress = receipt.events[0].args.newLockAddress
   console.log(`New Lock deployed at: ${newLockAddress}`)
   const lockedFyiLock = await ethers.getContractAt(LockABI, newLockAddress)

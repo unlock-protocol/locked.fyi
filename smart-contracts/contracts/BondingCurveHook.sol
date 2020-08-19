@@ -12,8 +12,7 @@ pragma solidity ^0.5.17;
 import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
-// import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@nomiclabs/buidler/console.sol';
+import './ITokenManager.sol';
 
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
@@ -30,9 +29,9 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   // Address of paired lock
   address public lockAddress;
+  address private tokenManagerAddress;
 
   /// @dev Used internally to determine if a price-update on the lock is required.
-  /// The lock itself is the sole source of truth
   uint256 private currentPrice;
 
   // For details: https://github.com/unlock-protocol/locked.fyi/blob/master/smart-contracts/Readme.md
@@ -44,9 +43,10 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   /// @param _initialSupply The initial value for tokenSupply
   /// @param _lock The address of the lock configured to use this hook.
   /// @dev _initialSupply must be > 0 to avoid a revert
-  constructor(uint _initialSupply, address _lock) public {
+  constructor(uint _initialSupply, address _lock, address _tokenManagerAddress) public {
     tokenSupply = _initialSupply;
     lockAddress = _lock;
+    tokenManagerAddress = _tokenManagerAddress;
   }
 
   function keyPurchasePrice(
@@ -82,6 +82,8 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   ) external
   {
     require(msg.sender == lockAddress, 'UNAUTHORIZED_ACCESS');
+    address author = bytesToAddress(data);
+
 
     IPublicLockV7 lock = IPublicLockV7(msg.sender);
     tokenSupply++;
@@ -90,22 +92,22 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
     int128 supply = tokenSupply.fromUInt();
     uint keyPrice = supply.log_2().div(CURVE_MODIFER).div(DENOMINATOR).mulu(1 * 10 ** 18);
     uint rounded = round(keyPrice);
-    if(rounded <= currentPrice) {
-      return;
-    } else {
+
+    if(rounded > currentPrice) {
       currentPrice = rounded;
-      // get current token address from lock:
       address tokenAddress = lock.tokenAddress();
       lock.updateKeyPricing(rounded, tokenAddress);
-      address author = bytesToAddress(data);
-      // DAO.mint(data, 1);
     }
+      if(author != address(0)) {
+        ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
+      }
   }
 
   // ////////////////////  Private  ///////////////////////////
 
   // Source: https://ethereum.stackexchange.com/questions/15350/how-to-convert-an-bytes-to-address-in-solidity
   function bytesToAddress(bytes memory b) private pure returns (address addr) {
+    require(b.length == 20, 'INVALID_BYTES_LENGTH');
   // solium-disable-next-line
     assembly {
       addr := mload(add(b,20))
