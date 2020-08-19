@@ -1,9 +1,9 @@
-const { ethers } = require('@nomiclabs/buidler')
-const { BigNumber, constants, utils } = require('ethers')
-const { assert } = require('chai')
+const {ethers} = require('@nomiclabs/buidler')
+const {BigNumber, constants, utils} = require('ethers')
+const {assert} = require('chai')
 const hookJSON = require('../artifacts/BondingCurveHook.json')
-// const { expectRevert } = require('@openzeppelin/test-helpers')
-const { deployLock, deployHook, hookAddress } = require('./setup.js')
+const {expectRevert} = require('@openzeppelin/test-helpers')
+const {deployLock, deployHook, hookAddress, deployToken} = require('./setup.js')
 
 const hookABI = hookJSON.abi
 const ZERO_ADDRESS = utils.getAddress(
@@ -320,7 +320,9 @@ describe('Price Rounding', () => {
     const receipt2 = await tx2.wait()
     console.log(`Gas- First key, w/price update : ${receipt2.gasUsed}`)
     console.log(`Gas- Key extension, w/price update,: ${receipt.gasUsed}`)
-    const foundEvents = receipt.events.filter(l => l.event === 'PricingChanged')
+    const foundEvents = receipt.events.filter(
+      (l) => l.event === 'PricingChanged'
+    )
     assert.equal(foundEvents.length, 1)
   })
 
@@ -376,7 +378,9 @@ describe('Price Rounding', () => {
     const receipt2 = await tx2.wait()
     console.log(`Gas- First key, No price update: ${receipt2.gasUsed}`)
     console.log(`Gas- Key extension, No price update, : ${receipt.gasUsed}`)
-    const foundEvents = receipt.events.filter(l => l.event === 'PricingChanged')
+    const foundEvents = receipt.events.filter(
+      (l) => l.event === 'PricingChanged'
+    )
 
     assert.equal(foundEvents.length, 0)
   })
