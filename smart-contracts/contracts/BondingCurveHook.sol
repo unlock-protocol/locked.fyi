@@ -14,6 +14,8 @@ import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 import './interfaces/ITokenManager.sol';
 import './interfaces/IERC20.sol';
+
+
 contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   // ////////////////////  Libs  ///////////////////////////
