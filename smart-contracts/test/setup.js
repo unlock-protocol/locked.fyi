@@ -1,5 +1,5 @@
-const { ethers } = require('@nomiclabs/buidler')
-const { BigNumber, constants, utils } = require('ethers')
+const {ethers} = require('@nomiclabs/buidler')
+const {BigNumber, constants, utils} = require('ethers')
 const UnlockJSON = require('@unlock-protocol/unlock-abi-7/Unlock.json')
 const LockJSON = require('@unlock-protocol/unlock-abi-7/PublicLock.json')
 const HookJSON = require('../artifacts/BondingCurveHook.json')
@@ -10,9 +10,6 @@ const LockABI = LockJSON.abi
 const UnlockBytecode = UnlockJSON.bytecode
 const LockBytecode = LockJSON.bytecode
 const HookBytecode = HookJSON.bytecode
-const TOKEN_MANAGER_ADDRESS = utils.getAddress(
-  '0xd718388e922e5d23e3349dacb5d8a283f63f95e4'
-)
 
 let addressOfHook
 let hook
@@ -40,6 +37,13 @@ exports.deployToken = async () => {
 
 exports.deployHook = async (_supply, _lockAddress) => {
   const [wallet] = await ethers.getSigners()
+  const {
+    lock,
+    deployer,
+    tokenManager,
+    rewards,
+    miniMeToken,
+  } = await getNamedAccounts()
   const BondingCurveHook = await ethers.getContractFactory(
     HookABI,
     HookBytecode,
@@ -49,7 +53,9 @@ exports.deployHook = async (_supply, _lockAddress) => {
   hook = await BondingCurveHook.deploy(
     _supply,
     _lockAddress,
-    TOKEN_MANAGER_ADDRESS
+    tokenManager,
+    rewards,
+    miniMeToken
   )
   await hook.deployed()
   addressOfHook = hook.address
@@ -81,7 +87,7 @@ exports.deployLock = async () => {
     'https://locksmith.unlock-protocol.com/api/key/'
   )
 
-  await unlock.setLockTemplate(lockTemplate.address).then(tx => {
+  await unlock.setLockTemplate(lockTemplate.address).then((tx) => {
     tx.wait()
   })
   await tx.wait()
