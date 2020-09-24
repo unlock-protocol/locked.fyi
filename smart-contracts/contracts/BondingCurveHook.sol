@@ -13,6 +13,7 @@ import '@unlock-protocol/unlock-abi-7/ILockKeyPurchaseHookV7.sol';
 import '@unlock-protocol/unlock-abi-7/IPublicLockV7.sol';
 import 'abdk-libraries-solidity/ABDKMath64x64.sol';
 import './interfaces/ITokenManager.sol';
+import './interfaces/IReward.sol';
 import './interfaces/IERC20.sol';
 
 
@@ -31,7 +32,12 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   // Address of paired lock
   address public lockAddress;
+  // Address of the Dao's Token-Manager app
   address private tokenManagerAddress;
+  // Address of the Dao's Rewards app
+  address private rewardsAddress;
+  // Address of the Dao's MiniMe token implementation
+  address private miniMeToken;
 
   /// @dev Used internally to determine if a price-update on the lock is required.
   uint256 private currentPrice;
@@ -44,11 +50,15 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
 
   /// @param _initialSupply The initial value for tokenSupply
   /// @param _lock The address of the lock configured to use this hook.
+  /// @param _tokenManagerAddress The address of the Dao's token manager contract.
+  /// @param _rewardsAddress The address of the Dao's token rewards contract.
   /// @dev _initialSupply must be > 0 to avoid a revert
-  constructor(uint _initialSupply, address _lock, address _tokenManagerAddress) public {
+  constructor(uint _initialSupply, address _lock, address _tokenManagerAddress, address _rewardsAddress, address _miniMeToken) public {
     tokenSupply = _initialSupply;
     lockAddress = _lock;
     tokenManagerAddress = _tokenManagerAddress;
+    rewardsAddress = _rewardsAddress;
+    miniMeToken = _miniMeToken;
   }
 
   function keyPurchasePrice(
@@ -105,6 +115,22 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
       uint withdrawalPercentage = 90;
       uint amount = lockBalance / 100 * withdrawalPercentage;
       lock.withdraw(tokenAddress, amount);
+      uint64 _startBlock;
+      uint64 _duration;
+
+
+      // @todo create new reward with correct params, using "amount"
+      IReward(rewardsAddress).newReward(
+        "Locked.fyi dividends",
+        false,
+        miniMeToken,
+        tokenAddress,
+        amount,
+        now,
+        1,
+        1,
+        0
+      );
     }
       if(author != address(0)) {
         // ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
