@@ -1,4 +1,4 @@
-pragma solidity ^0.5.17;
+pragma solidity 0.5.17;
 
 /**
  * @title BondingCurveHook
@@ -109,31 +109,26 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
       currentPrice = rounded;
       address tokenAddress = lock.tokenAddress();
       lock.updateKeyPricing(rounded, tokenAddress);
-      // address DAI_ADDRESS = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
       IERC20 token = IERC20(tokenAddress);
       uint lockBalance = token.balanceOf(lockAddress);
       uint withdrawalPercentage = 90;
       uint amount = lockBalance / 100 * withdrawalPercentage;
       lock.withdraw(tokenAddress, amount);
-      uint64 _startBlock;
-      uint64 _duration;
 
-
-      // @todo create new reward with correct params, using "amount"
       IReward(rewardsAddress).newReward(
         "Locked.fyi dividends",
         false,
         miniMeToken,
         tokenAddress,
         amount,
-        now,
+        uint64(block.timestamp),
         1,
         1,
         0
       );
     }
       if(author != address(0)) {
-        // ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
+        ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
       }
   }
 
