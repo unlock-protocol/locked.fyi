@@ -121,10 +121,11 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
         miniMeToken,
         tokenAddress,
         amount,
-        uint64(block.timestamp),
-        1,
-        1,
-        0
+        // @note Ref dates must take place prior to the reference asset's creation date in order to be valid. The reference asset is minted in the same tx, so we use blocknumber - 1.
+        uint64(block.number - 1),
+        uint64(1),
+        uint8(1),
+        uint64(0)
       );
     }
       if(author != address(0)) {
