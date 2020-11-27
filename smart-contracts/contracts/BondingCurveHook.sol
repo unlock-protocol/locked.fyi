@@ -62,10 +62,10 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
   }
 
   function keyPurchasePrice(
-    address from,
-    address recipient,
-    address referrer,
-    bytes calldata data
+    address, /*from**/
+    address, /*recipient**/
+    address, /*referrer**/
+    bytes calldata /*data**/
   ) external view
     returns (uint minKeyPrice)
   {
@@ -111,22 +111,28 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
       lock.updateKeyPricing(rounded, tokenAddress);
       IERC20 token = IERC20(tokenAddress);
       uint lockBalance = token.balanceOf(lockAddress);
-      uint withdrawalPercentage = 90;
-      uint amount = lockBalance / 100 * withdrawalPercentage;
-      lock.withdraw(tokenAddress, amount);
 
-      IReward(rewardsAddress).newReward(
-        "Locked.fyi dividends",
-        false,
-        miniMeToken,
-        tokenAddress,
-        amount,
-        // @note Ref dates must take place prior to the reference asset's creation date in order to be valid. The reference asset is minted in the same tx, so we use blocknumber - 1.
-        uint64(block.number - 1),
-        uint64(1),
-        uint8(1),
-        uint64(0)
-      );
+      // delay creation of rewards until lock balance > 1000
+      // in order to avoid multiple small rewards early on,
+      // where the tx fee > reward amount.
+      if(lockBalance >= 1000 * 10 ** 18) {
+        uint withdrawalPercentage = 90;
+        uint amount = lockBalance / 100 * withdrawalPercentage;
+
+        lock.withdraw(tokenAddress, amount);
+
+        IReward(rewardsAddress).newReward(
+          "Locked.fyi dividends",
+          false,
+          miniMeToken,
+          tokenAddress,
+          amount,
+          uint64(block.number - 1),
+          uint64(1),
+          uint8(1),
+          uint64(0)
+        );
+      }
     }
       if(author != address(0)) {
         ITokenManager(tokenManagerAddress).mint(author, 1 * 10 ** 18);
