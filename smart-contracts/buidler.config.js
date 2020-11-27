@@ -75,15 +75,5 @@ module.exports = {
       1: '', // undeployed
       4: '0xea123bda945ff925ff8db19b7e108dfe8f632df5',
     },
-    rewards: {
-      default: 4,
-      1: '', // undeployed
-      4: '0x002c99efd1d64b2471f3543913ce2078b13909be',
-    },
-    miniMeToken: {
-      default: 5,
-      1: '', // undeployed
-      4: '0xc3b83985c5e7e8b42334de793ec6135578dd37a4',
-    },
   },
 }
