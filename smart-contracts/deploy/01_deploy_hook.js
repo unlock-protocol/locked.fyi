@@ -6,7 +6,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
   console.log(`deployer: ${deployer}`)
   console.log(`tokenManager: ${tokenManager}`)
 
-  const initialSupply = 42
+  const initialSupply = 2
 
   const deployResult = await deployIfDifferent(
     ['data'],
