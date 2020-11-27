@@ -1,13 +1,7 @@
 module.exports = async ({getNamedAccounts, deployments}) => {
   const {deployIfDifferent, log} = deployments
 
-  const {
-    lock,
-    deployer,
-    tokenManager,
-    rewards,
-    miniMeToken,
-  } = await getNamedAccounts()
+  const {lock, deployer, tokenManager} = await getNamedAccounts()
   console.log(`lock: ${lock}`)
   console.log(`deployer: ${deployer}`)
   console.log(`tokenManager: ${tokenManager}`)
@@ -21,9 +15,7 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     'BondingCurveHook',
     initialSupply,
     lock,
-    tokenManager,
-    rewards,
-    miniMeToken
+    tokenManager
   )
 
   if (deployResult.newlyDeployed) {
