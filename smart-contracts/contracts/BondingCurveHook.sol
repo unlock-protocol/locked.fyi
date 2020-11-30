@@ -122,7 +122,7 @@ contract BondingCurveHook is ILockKeyPurchaseHookV7 {
         lock.withdraw(tokenAddress, amount);
 
         IReward(rewardsAddress).newReward(
-          "Locked.fyi dividends",
+          "Locked.fyi Reward",
           false,
           miniMeToken,
           tokenAddress,
