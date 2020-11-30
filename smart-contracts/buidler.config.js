@@ -62,18 +62,23 @@ module.exports = {
     },
     lock: {
       default: 1,
-      1: '0xaad5Bff48e1534EF1f2f0A4184F5C2E61aC47EC3',
-      4: '0x4eacB8C1C3925B4C7276a7f517ad3B7A8Aa5c831',
-    },
-    hook: {
-      default: 2,
       1: '', // undeployed
-      4: '0x556a52cEAbFB97BEf93a7f1CcE7f1f49d058D80E',
+      4: '0xda2Bb776710ce1D1B4c6d35a3FCc243Bd92F382b',
     },
     tokenManager: {
       default: 3,
       1: '', // undeployed
-      4: '0xea123bda945ff925ff8db19b7e108dfe8f632df5',
+      4: '0x757734fbd72343dd73327e5a504acfe747eecdfd',
+    },
+    rewards: {
+      default: 4,
+      1: '', // undeployed
+      4: '0x62206dc3e8698effd6Fb92b818EF428a2c9A05Ea',
+    },
+    miniMeToken: {
+      default: 5,
+      1: '', // undeployed
+      4: '0xe2e1344cce5a11d6ceb048077b96722d3d00a686',
     },
   },
 }
